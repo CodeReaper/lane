@@ -125,7 +125,7 @@ _GENERATE_STRUCT()
         VALUE=$(echo "$ITEM" | cut -d\; -f2-)
         PARAMETERS=$(echo $VALUE | grep -o -E '%[0-9]+' | wc -l | tr -d ' \n')
 
-        if [[ "$PARAMETERS" == "0" ]]; then
+        if [ "$PARAMETERS" = "0" ]; then
             printf "\tstatic let ${KEY} = NSLocalizedString(\"${KEY}\", comment: \"\")\n"
         else
             ARGUMENTS=$(for i in $(seq 1 $PARAMETERS); do printf "p$i: String, _ "; done | rev | cut -c5- | rev)
