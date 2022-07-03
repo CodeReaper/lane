@@ -22,11 +22,11 @@ _GENERATE_STRUCT()
     echo 'import UIKit'
     echo 'struct Images {'
 
-    find $INPUT -type d -iname "*.imageset" -print0 | while read -d $'\0' FILE; do
-        NAME=$(basename "$FILE" .imageset)
-        SAFE_NAME=$(echo "$NAME" | sed 's|-|_|g;s| |_|g')
+    find "$INPUT" -type d -iname "*.imageset" -exec sh -c '
+        NAME=$(basename "$1" .imageset)
+        SAFE_NAME=$(echo $NAME | sed '\''s/-/_/g'\'' | sed '\''s/ /_/g'\'')
         printf "\tstatic let ${SAFE_NAME} = UIImage(named:\"${NAME}\")!\n"
-    done
+    ' -- {} \;
 
     echo '}'
 }
