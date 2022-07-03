@@ -9,6 +9,96 @@ on:
       - main
 
 jobs:
+  lane:
+    name: Test Static Resources Images
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Test missing argument
+        run: |
+          rm -rf lanes
+          mkdir lanes
+
+          set +e
+          sh ./lane > result
+          [ $? -eq 1 ] || exit 1
+          echo 'The available lanes are:' > expected
+          diff -q expected result || { echo "Unexpected difference:"; diff expected result; exit 1; }
+
+      - name: Test help argument
+        run: |
+          rm -rf lanes
+          mkdir lanes
+
+          set +e
+          sh ./lane -h > 1
+          [ $? -eq 0 ] || exit 1
+
+          sh ./lane --help > 2
+          [ $? -eq 0 ] || exit 1
+
+          sh ./lane help > 3
+          [ $? -eq 0 ] || exit 1
+
+          diff -q 1 2 || { echo "Unexpected difference:"; diff 1 2; exit 1; }
+          diff -q 2 3 || { echo "Unexpected difference:"; diff 2 3; exit 1; }
+
+      - name: Test missing lanes directory
+        run: |
+          rm -rf lanes
+
+          set +e
+          sh ./lane > /dev/null
+          [ $? -eq 2 ] || exit 1
+
+      - name: Test missing lane
+        run: |
+          rm -rf lanes
+          mkdir lanes
+          echo 'echo hi' > lanes/say-hi
+
+          set +e
+          sh ./lane say-bye > /dev/null
+          [ $? -eq 10 ] || exit 1
+
+      - name: Test configured lane
+        run: |
+          rm -rf lanes
+          mkdir lanes
+          echo 'echo hi' > lanes/say-hi
+
+          set +e
+          sh ./lane say-hi > result
+          [ $? -eq 0 ] || exit 1
+          echo 'hi' > expected
+          diff -q expected result || { echo "Unexpected difference:"; diff expected result; exit 1; }
+
+      - name: Test builtin lane
+        run: |
+          rm -rf lanes
+          mkdir lanes
+          echo 'echo hi' > lane.d/say-hi
+
+          set +e
+          sh ./lane say-hi > result
+          [ $? -eq 0 ] || exit 1
+          echo 'hi' > expected
+          diff -q expected result || { echo "Unexpected difference:"; diff expected result; exit 1; }
+
+      - name: Test builtin lane over configured lane
+        run: |
+          rm -rf lanes
+          mkdir lanes
+          echo 'echo false' > lanes/say
+          echo 'echo true' > lane.d/say
+
+          set +e
+          sh ./lane say > result
+          [ $? -eq 0 ] || exit 1
+          echo 'true' > expected
+          diff -q expected result || { echo "Unexpected difference:"; diff expected result; exit 1; }
+
   mobile-static-resources-images:
     name: Test Static Resources Images
     runs-on: ubuntu-latest
