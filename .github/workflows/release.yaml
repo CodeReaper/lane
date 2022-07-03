@@ -31,7 +31,7 @@ jobs:
           VERSION=$(cat version | sed 's|[^0-9\.]||g')
 
           echo '::group::Resolved versions'
-          printf 'Checking versions:\n%s - from main\n%s - current version' "$MAIN" "$VERSION"
+          printf 'Checking versions:\n%s - from main\n%s - current version\n' "$MAIN" "$VERSION"
           echo '::endgroup::'
 
           [ "$MAIN" = "$VERSION" ] && (echo 'Version must be changed.'; exit 1)
@@ -45,7 +45,7 @@ jobs:
           VERSION=$(cat version | sed 's|[^0-9\.]||g')
 
           echo '::group::Resolved version'
-          printf 'Current version: %s' "$VERSION"
+          printf 'Current version: %s\n' "$VERSION"
           echo '::endgroup::'
 
           echo "::set-output name=version::$VERSION"
@@ -104,5 +104,5 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ needs.version-check.outputs.version }}
+          tag_name: "v.${{ needs.version-check.outputs.version }}"
           files: artifacts
