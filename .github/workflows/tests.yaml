@@ -44,6 +44,23 @@ jobs:
           diff -q 1 2 || { echo "Unexpected difference:"; diff 1 2; exit 1; }
           diff -q 2 3 || { echo "Unexpected difference:"; diff 2 3; exit 1; }
 
+      - name: Test version argument
+        run: |
+          rm -rf lanes
+
+          set +e
+          sh ./lane -v > 1
+          [ $? -eq 0 ] || exit 1
+
+          sh ./lane --version > 2
+          [ $? -eq 0 ] || exit 1
+
+          sh ./lane version > 3
+          [ $? -eq 0 ] || exit 1
+
+          diff -q 1 2 || { echo "Unexpected difference:"; diff 1 2; exit 1; }
+          diff -q 2 3 || { echo "Unexpected difference:"; diff 2 3; exit 1; }
+
       - name: Test missing lanes directory
         run: |
           rm -rf lanes

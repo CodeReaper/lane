@@ -57,16 +57,17 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Inject version lane
-        run: |
-          printf 'echo Version: ' > lane.d/version
-          cat version >> lane.d/version
-
       - name: Bundle source files
         run: |
           mkdir bundle
-          cp -r lane lane.d bundle/
+          cp -r lane.d bundle/
           cp LICENSE bundle/LICENSE.txt
+
+      - name: Bundle version-injected-lane
+        run: |
+          VERSION='${{ needs.version-check.outputs.version }}'
+          printf '#!/bin/sh\nVERSION='\'''%s'\'''' "$VERSION" > bundle/lane
+          tail +4 lane >> bundle/lane
 
       - name: Package files
         run: |
