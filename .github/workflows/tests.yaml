@@ -260,3 +260,15 @@ jobs:
         run: |
           set -e
           sh lane.d/shell-run-github-workflow-tests .github/test-resources/shell-run-github-workflow-tests/test.yaml
+  
+  shellcheck:
+    name: Shellcheck
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Run ShellCheck
+      uses: ludeeus/action-shellcheck@master
+      with:
+        scandir: './lane.d'
+        additional_files: 'lane'

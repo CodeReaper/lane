@@ -1,2 +1,3 @@
 yq 4.25.3
 jq 1.6
+shellcheck 0.8.0

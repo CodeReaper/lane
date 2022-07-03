@@ -1,1 +1,2 @@
 lane shell-run-github-workflow-tests .github/workflows/tests.yaml
+shellcheck lane.d/* lane

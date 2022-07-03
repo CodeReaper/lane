@@ -1,7 +1,8 @@
 #!/bin/sh
 set -e
 
-export TMP=$(mktemp -dq)
+TMP=$(mktemp -dq)
+export TMP
 
 trap 'set +x; rm -rf $TMP 2>/dev/null 2>&1' 0
 trap 'exit 2' 1 2 3 15
@@ -13,11 +14,12 @@ _LOAD_CONFIGURATION_FILE()
         exit 1
     fi
 
-    export INPUT=$(grep -E '^INPUT\s?=' "${1}" | cut -d= -f2-)
-    export MAIN_LANGUAGE=$(grep -E '^MAIN_LANGUAGE\s?=' "${1}" | cut -d= -f2-)
-    export KEY_ROW=$(grep -E '^KEY_ROW\s?=' "${1}" | cut -d= -f2-)
-    export CONFIGURATION=$(grep -E '^CONFIGURATION\s?=' "${1}" | cut -d= -f2-)
-    export OUTPUT=$(grep -E '^OUTPUT\s?=' "${1}" | cut -d= -f2-)
+    INPUT=$(grep -E '^INPUT\s?=' "${1}" | cut -d= -f2-)
+    MAIN_LANGUAGE=$(grep -E '^MAIN_LANGUAGE\s?=' "${1}" | cut -d= -f2-)
+    KEY_ROW=$(grep -E '^KEY_ROW\s?=' "${1}" | cut -d= -f2-)
+    CONFIGURATION=$(grep -E '^CONFIGURATION\s?=' "${1}" | cut -d= -f2-)
+    OUTPUT=$(grep -E '^OUTPUT\s?=' "${1}" | cut -d= -f2-)
+    export INPUT OUTPUT KEY_ROW CONFIGURATION OUTPUT
 }
 
 _CHECK_ARGUMENTS()
@@ -59,9 +61,9 @@ _CHECK_CONFIGURATION()
         exit 1
     fi
 
-    if $(grep -qi 'ios' "$1/.type"); then
+    if grep -qi 'ios' "$1/.type"; then
         export OUTPUT_TYPE=ios
-    elif $(grep -qi 'android' "$1/.type"); then
+    elif grep -qi 'android' "$1/.type"; then
         export OUTPUT_TYPE=android
     else
         printf "The output type is not supported, found: "
@@ -120,22 +122,22 @@ _GENERATE_STRUCT()
     echo 'import Foundation'
     echo 'struct Translations {'
 
-    cat "${TMP}/${MAIN_LANGUAGE}.csv"| while read ITEM; do
+    while read -r ITEM; do
         KEY=$(echo "$ITEM" | cut -d\; -f1)
         VALUE=$(echo "$ITEM" | cut -d\; -f2-)
-        PARAMETERS=$(echo $VALUE | grep -o -E '%[0-9]+' | wc -l | tr -d ' \n')
+        PARAMETERS=$(echo "$VALUE" | grep -o -E '%[0-9]+' | wc -l | tr -d ' \n')
 
         if [ "$PARAMETERS" = "0" ]; then
-            printf "\tstatic let ${KEY} = NSLocalizedString(\"${KEY}\", comment: \"\")\n"
+            printf "\tstatic let %s = NSLocalizedString(\"%s\", comment: \"\")\n" "$KEY" "$KEY"
         else
-            ARGUMENTS=$(for i in $(seq 1 $PARAMETERS); do printf "p$i: String, _ "; done | rev | cut -c5- | rev)
-            REPLACEMENTS=$(for i in $(seq 1 $PARAMETERS); do printf ".replacingOccurrences(of: \"%%%%${i}\", with: p${i})"; done)
-            printf "\tstatic func ${KEY}(_ ${ARGUMENTS}) -> String {"
-            printf " return NSLocalizedString(\"${KEY}\", comment: \"\")"
-            printf "${REPLACEMENTS}"
+            ARGUMENTS=$(for i in $(seq 1 "$PARAMETERS"); do printf "p%s: String, _ " "$i"; done | rev | cut -c5- | rev)
+            REPLACEMENTS=$(for i in $(seq 1 "$PARAMETERS"); do printf ".replacingOccurrences(of: \"%%%s\", with: p%s)" "$i" "$i"; done)
+            printf "\tstatic func %s(_ %s) -> String {" "$KEY" "$ARGUMENTS"
+            printf " return NSLocalizedString(\"%s\", comment: \"\")" "$KEY"
+            printf "%s" "$REPLACEMENTS"
             echo " }"
         fi
-    done
+    done < "${TMP}/${MAIN_LANGUAGE}.csv"
 
     echo '}'
 }
