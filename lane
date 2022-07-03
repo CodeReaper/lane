@@ -56,7 +56,9 @@ if [ -f "${LANE_PWD}/lane.d/$1" ]; then
         INI=$(basename "$0")
         sh "${LANE_PWD}/lane.d/$1" "${LANE_PWD}/lanes/${INI}.ini"
     else
-        sh "${LANE_PWD}/lane.d/$1" "${2}"
+        LANE="$1"
+        shift
+        sh "${LANE_PWD}/lane.d/$LANE" "$@"
     fi
 elif [ -f "${LANE_PWD}/lanes/$1" ]; then
     sh "${LANE_PWD}/lanes/$1" "${LANE_PWD}/lanes/${1}.ini"

@@ -23,21 +23,10 @@ jobs:
       - name: Verify version
         if: github.ref != 'refs/heads/main'
         run: |
-          if [ ! -f branch-main/version ]; then
-            exit 0
-          fi
+          MAIN=$(cat branch-main/version)
+          VERSION=$(cat version)
 
-          MAIN=$(cat branch-main/version | sed 's|[^0-9\.]||g')
-          VERSION=$(cat version | sed 's|[^0-9\.]||g')
-
-          echo '::group::Resolved versions'
-          printf 'Checking versions:\n%s - main version\n%s - current version\n' "$MAIN" "$VERSION"
-          echo '::endgroup::'
-
-          [ "$MAIN" = "$VERSION" ] && (echo 'Version must be changed.'; exit 1)
-
-          VERIFY=$(printf '%s\n%s' "$MAIN" "$VERSION" | sort -t '.' -k 1,1 -k 2,2 -k 3,3 -k 4,4 -g | tail -n1)
-          [ "$MAIN" = "$VERIFY" ] && (echo 'Version must be greater than version on main.'; exit 1)
+          sh lane.d/shell-github-action-semver-compare "$MAIN" "$VERSION"
 
       - name: Output version
         id: version
