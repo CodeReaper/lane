@@ -1,4 +1,6 @@
 #!/bin/sh
+VERSION='unreleased'
+# DANGER: LINES ABOVE MUST BE ALIGNED WITH RELEASE BUILD
 
 set -e
 OLD_PWD=$(pwd)
@@ -12,6 +14,11 @@ _DISPLAY_HELP()
     echo "Where the name of a lane indicates wich lane you wish to execute"
 }
 
+_DISPLAY_VERSION()
+{
+    echo "Version: $VERSION"
+}
+
 _DISPLAY_LANES()
 {
     echo "The available lanes are:"
@@ -20,6 +27,11 @@ _DISPLAY_LANES()
 
 if [ "$1" = "-h" ] || [ "$1" = "--help" ] || [ "$1" = "help" ]; then
     _DISPLAY_HELP
+    exit 0
+fi
+
+if [ "$1" = "-v" ] || [ "$1" = "--version" ] || [ "$1" = "version" ]; then
+    _DISPLAY_VERSION
     exit 0
 fi
 
