@@ -278,6 +278,48 @@ jobs:
           set -e
           sh lane.d/shell-run-github-workflow-tests .github/test-resources/shell-run-github-workflow-tests/test.yaml
   
+  shell-github-action-semver-compare:
+    name: Test Shell Github Action Semver Compare
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Test missing arguments
+        run: |
+          set +e
+          sh lane.d/shell-github-action-semver-compare > /dev/null
+          [ $? -eq 1 ] || exit 1
+
+      - name: Test missing main version argument
+        run: |
+          set +e
+          sh lane.d/shell-github-action-semver-compare "" "0.0.0" > /dev/null
+          [ $? -eq 0 ] || exit 1
+
+      - name: Test missing current version argument
+        run: |
+          set +e
+          sh lane.d/shell-github-action-semver-compare "0.0.0" "" > /dev/null
+          [ $? -eq 1 ] || exit 1
+
+      - name: Test matching versions
+        run: |
+          set +e
+          sh lane.d/shell-github-action-semver-compare "0.0.0" "0.0.0" > /dev/null
+          [ $? -eq 10 ] || exit 1
+
+      - name: Test descending versions
+        run: |
+          set +e
+          sh lane.d/shell-github-action-semver-compare "1.2.3" "0.0.0" > /dev/null
+          [ $? -eq 20 ] || exit 1
+
+      - name: Test ascending versions
+        run: |
+          set +e
+          sh lane.d/shell-github-action-semver-compare "1.2.3" "3.2.1" > /dev/null
+          [ $? -eq 0 ] || exit 1
+
   shellcheck:
     name: Shellcheck
     runs-on: ubuntu-latest
