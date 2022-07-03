@@ -10,7 +10,7 @@ on:
 
 jobs:
   lane:
-    name: Test Static Resources Images
+    name: Test Lane
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
