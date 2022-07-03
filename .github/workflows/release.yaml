@@ -93,7 +93,6 @@ jobs:
     name: Create Release
     needs: [version-check, create-artifacts]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v3
@@ -101,7 +100,11 @@ jobs:
           name: release-artifacts
           path: artifacts
 
+      - name: Display structure of files
+        run: ls -Rl
+
       - name: Create Release
+        if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v1
         with:
           tag_name: "v.${{ needs.version-check.outputs.version }}"
