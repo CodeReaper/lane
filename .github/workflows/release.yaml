@@ -1,0 +1,106 @@
+name: Release
+
+on:
+  pull_request: {}
+  push:
+    branches:
+      - main
+
+jobs:
+  version-check:
+    name: Verify version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/checkout@v3
+        with:
+          ref: main
+          path: branch-main
+
+      - name: Verify version
+        if: github.ref != 'refs/heads/main'
+        run: |
+          if [ ! -f branch-main/version ]; then
+            exit 0
+          fi
+
+          MAIN=$(cat branch-main/version | sed 's|[^0-9\.]||g')
+          VERSION=$(cat version | sed 's|[^0-9\.]||g')
+
+          echo '::group::Resolved versions'
+          printf 'Checking versions:\n%s - from main\n%s - current version' "$MAIN" "$VERSION"
+          echo '::endgroup::'
+
+          [ "$MAIN" = "$VERSION" ] && (echo 'Version must be changed.'; exit 1)
+
+          VERIFY=$(printf '%s\n%s' "$MAIN" "$VERSION" | sort -t '.' -k 1,1 -k 2,2 -k 3,3 -k 4,4 -g | tail -n1)
+          [ "$MAIN" = "$VERIFY" ] && (echo 'Version must be greater than version on main.'; exit 1)
+
+      - name: Output version
+        id: version
+        run: |
+          VERSION=$(cat version | sed 's|[^0-9\.]||g')
+
+          echo '::group::Resolved version'
+          printf 'Current version: %s' "$VERSION"
+          echo '::endgroup::'
+
+          echo "::set-output name=version::$VERSION"
+
+  create-artifacts:
+    name: Create Artifacts
+    needs: version-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Inject version lane
+        run: |
+          printf 'echo Version: ' > lane.d/version
+          cat version >> lane.d/version
+
+      - name: Bundle source files
+        run: |
+          mkdir bundle
+          cp -r lane lane.d bundle/
+          cp LICENSE bundle/LICENSE.txt
+
+      - name: Package files
+        run: |
+          VERSION=$(cat version)
+          cd bundle
+          tar -cJf "../lane-${VERSION}.tar.xz" *
+
+      - name: Calculate checksums
+        run: |
+          for file in ./lane-*.tar.xz; do
+            [ -f "$file" ] || continue
+            sha512sum "$file" > "$file.sha512sum"
+          done
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: release-artifacts
+          path: lane-*.tar.*
+
+  create-release:
+    name: Create Release
+    needs: [version-check, create-artifacts]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: release-artifacts
+          path: artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.version-check.outputs.version }}
+          files: artifacts
