@@ -68,6 +68,7 @@ jobs:
           VERSION='${{ needs.version-check.outputs.version }}'
           printf '#!/bin/sh\nVERSION=''%s''\n' "$VERSION" > bundle/lane
           tail +4 lane >> bundle/lane
+          chmod +x bundle/lane
 
       - name: Package files
         run: |
