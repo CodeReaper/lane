@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-TMP=$(mktemp -dq)
+export TMP=$(mktemp -dq)
 
 trap 'set +x; rm -rf $TMP 2>/dev/null 2>&1' 0
 trap 'exit 2' 1 2 3 15
@@ -26,7 +26,7 @@ _CHECK_ARGUMENTS()
         echo "Configuration setting for 'INPUT' is missing or not a directory. Found: $INPUT"
         exit 1
     fi
-    if [ "$OUTPUT_TYPE" = "swift" ]; then
+    if [ "$OUTPUT_TYPE" = "ios" ]; then
         if [ -z "$MAIN_LANGUAGE" ]; then
             echo "Configuration setting for 'MAIN_LANGUAGE' is missing."
             exit 1
@@ -59,8 +59,8 @@ _CHECK_CONFIGURATION()
         exit 1
     fi
 
-    if $(grep -qi 'swift' "$1/.type"); then
-        export OUTPUT_TYPE=swift
+    if $(grep -qi 'ios' "$1/.type"); then
+        export OUTPUT_TYPE=ios
     elif $(grep -qi 'android' "$1/.type"); then
         export OUTPUT_TYPE=android
     else
@@ -73,45 +73,45 @@ _CHECK_CONFIGURATION()
 
 _UNPACK_CSV()
 {
-    find "$CONFIGURATION/input" -type f -print0 | while read -d $'\0' ITEM; do
-        OFFSET=$(cat "$ITEM" | tr -d "[:blank:]")
-        LANG=$(basename "$ITEM")
-        tail +2 "./$INPUT" | grep -v ^$ | sed 's|\\;|\\\\\\|g' | cut -d\; -f$KEY_ROW,$OFFSET | sed 's|\\\\\\|;|g' | sort > "${TMP}/${LANG}.csv"
-    done
+    find "$CONFIGURATION/input" -type f -exec sh -c '
+        OFFSET=$(cat "$1" | tr -d "[:blank:]")
+        LANG=$(basename "$1")
+        tail +2 "./$INPUT" | grep -v ^$ | sed '\''s|\\;|\\\\\\|g'\'' | cut -d\; -f$KEY_ROW,$OFFSET | sed '\''s|\\\\\\|;|g'\'' | sort > "${TMP}/${LANG}.csv"
+    ' -- {} \;
 }
 
 _GENERATE_XML()
 {
-    find "$CONFIGURATION/output" -type f -print0 | while read -d $'\0' ITEM; do
-        LANG=$(basename "$ITEM")
-        FILE=$(cat "$ITEM" | tr -d "[:blank:]")
+    find "$CONFIGURATION/output" -type f  -exec sh -c '
+        LANG=$(basename "$1")
+        FILE=$(cat "$1" | tr -d "[:blank:]")
         OUTPUT_DIRECTORY=$(dirname "$FILE")
         mkdir -p "$OUTPUT_DIRECTORY" 2>/dev/null
-        echo '<resources>' > "$FILE"
+        echo "<resources>" > "$FILE"
         cat "${TMP}/${LANG}.csv"| while read LINE; do
-            KEY=$(echo "$LINE" | cut -d\; -f1 | tr '[:upper:]' '[:lower:]')
-            VALUE=$(echo "$LINE" | cut -d\; -f2- | sed -E 's|(%[0-9]+)|\1$s|g;s|%|%%|g')
+            KEY=$(echo "$LINE" | cut -d\; -f1 | tr "[:upper:]" "[:lower:]")
+            VALUE=$(echo "$LINE" | cut -d\; -f2- | sed -E '\''s|(%[0-9]+)|\1$s|g;s|%|%%|g'\'')
             printf "\t<string name=\"$KEY\">$VALUE</string>\n" >> "$FILE"
         done
-        echo '</resources>' >> "$FILE"
-    done
+        echo "</resources>" >> "$FILE"
+    ' -- {} \;
 }
 
 _GENERATE_STRINGS()
 {
-    find "$CONFIGURATION/output" -type f -print0 | while read -d $'\0' ITEM; do
-        LANG=$(basename "$ITEM")
-        cat "$ITEM" | grep -v ^$ | while read FILE; do
+    find "$CONFIGURATION/output" -type f -exec sh -c '
+        LANG=$(basename "$1")
+        cat "$1" | grep -v ^$ | while read FILE; do
             OUTPUT_DIRECTORY=$(dirname "$FILE")
             mkdir -p "$OUTPUT_DIRECTORY" 2>/dev/null
-            printf '' > "$FILE"
+            printf "" > "$FILE"
             cat "${TMP}/${LANG}.csv"| while read LINE; do
                 KEY=$(echo "$LINE" | cut -d\; -f1)
-                VALUE=$(echo "$LINE" | cut -d\; -f2- | sed 's|\"|\\"|g')
+                VALUE=$(echo "$LINE" | cut -d\; -f2- | sed '\''s|\"|\\"|g'\'')
                 echo "\"$KEY\" = \"$VALUE\";" >> "$FILE"
             done
         done
-    done
+    ' -- {} \;
 }
 
 _GENERATE_STRUCT()
@@ -148,7 +148,7 @@ _CHECK_ARGUMENTS
 
 _UNPACK_CSV
 
-if [ "$OUTPUT_TYPE" = "swift" ]; then
+if [ "$OUTPUT_TYPE" = "ios" ]; then
     _GENERATE_STRINGS
 
     OUTPUT_DIRECTORY=$(dirname "$OUTPUT")

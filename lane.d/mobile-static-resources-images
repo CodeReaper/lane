@@ -24,7 +24,7 @@ _GENERATE_STRUCT()
 
     find "$INPUT" -type d -iname "*.imageset" -exec sh -c '
         NAME=$(basename "$1" .imageset)
-        SAFE_NAME=$(echo $NAME | sed '\''s/-/_/g'\'' | sed '\''s/ /_/g'\'')
+        SAFE_NAME=$(echo $NAME | sed '\''s/-/_/g;s/ /_/g'\'')
         printf "\tstatic let ${SAFE_NAME} = UIImage(named:\"${NAME}\")!\n"
     ' -- {} \;
 
