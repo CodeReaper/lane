@@ -1,0 +1,10 @@
+{
+	"name": "Alpine",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"remoteUser": "vscode",
+	"remoteEnv": {
+		"PATH": "${containerEnv:PATH}:/workspaces/lane"
+	}
+}

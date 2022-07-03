@@ -1,0 +1,5 @@
+<resources>
+	<string name="something">Noget</string>
+	<string name="something_with_arguments">Noget med %1$s og %2$s</string>
+	<string name="something_with_semicolon">Noget med ;</string>
+</resources>

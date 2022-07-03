@@ -1,0 +1,85 @@
+#!/bin/sh
+
+# Takes one argument:
+#   - file:
+#       The workflow file which contains the tests to run.
+#       Must be a workflow file with script-based tests.
+#       Examples:
+#           - workflow.yaml
+#           - ../workflow.yaml
+
+# Output example:
+# Name of a job
+#  - Name of a step: Pass
+#  - Name of a failing step: Fail
+
+FILE=$1
+
+DIR=$(mktemp -dq)
+
+[ -f "$FILE" ] || { echo "Not a FILE: $FILE"; exit 1; }
+
+rm -fr $DIR/* > /dev/null
+mkdir -p $DIR > /dev/null
+trap 'set +x; rm -fr $DIR >/dev/null 2>&1' 0
+trap 'exit 2' 1 2 3 15
+
+for command in git yq jq; do
+  if ! [ -x "$(command -v $command)" ]; then
+    echo "Error: $command is not installed." >&2
+    exit 1
+  fi
+done
+
+set -e
+
+printf 'Preparing runnner...'
+
+echo 'TOTAL_PASS=0; TOTAL_FAIL=0' > $DIR/runner.sh
+
+yq -o json "$FILE" | jq -rc '.jobs | to_entries[] | [{group: .key, groupName: .value.name, script: .value.steps}] | .[]' | while read -r JOB; do
+    GROUP=$(printf '%s\n' "$JOB" | jq -rj '.group')
+    GROUP_NAME=$(printf '%s\n' "$JOB" | jq -rj '.groupName')
+
+    echo "cd '${DIR}/workspace/'; git reset HEAD --hard > /dev/null; git clean -fdx . > /dev/null; sh '${DIR}/${GROUP}.sh'" >> $DIR/runner.sh
+    echo "TOTAL_PASS=\$((TOTAL_PASS+\$(cat ${DIR}/PASS))); TOTAL_FAIL=\$((TOTAL_FAIL+\$(cat ${DIR}/FAIL)))" >> $DIR/runner.sh
+    echo "echo; echo '$GROUP_NAME'" > "${DIR}/${GROUP}.sh"
+    echo "GREEN=$'\e[0;32m'; RED=$'\e[0;31m'; NC=$'\e[0m'; PASS=0; FAIL=0" >> "${DIR}/${GROUP}.sh"
+
+    I=0
+    printf '%s\n' "$JOB" | jq -rc '.script[] | select(.run != null)' | while read -r STEP; do
+        STEP_NAME=$(printf '%s\n' "$STEP" | jq -rj '.name')
+        RUN=$(printf '%s\n' "$STEP" | jq -rj '.run')
+
+        echo "$RUN" > "${DIR}/${GROUP}.${I}.sh"
+
+        echo "printf ' - ${STEP_NAME}: '" >> "${DIR}/${GROUP}.sh"
+        echo "set +e; sh '${DIR}/${GROUP}.${I}.sh' > messages 2>&1" >> "${DIR}/${GROUP}.sh"
+        echo "if [ \$? -eq 0 ]; then printf \${GREEN}'Pass\n'\${NC}; PASS=\$((PASS+1)); else printf \${RED}'Fail\n'\${NC}; FAIL=\$((FAIL+1)); cat messages; fi;" >> "${DIR}/${GROUP}.sh"
+
+        I=$((I+1))
+    done
+
+    echo "printf \$PASS > '${DIR}/PASS'; printf \$FAIL > '${DIR}/FAIL'" >> "${DIR}/${GROUP}.sh"
+
+done
+
+echo 'TOTAL=$((TOTAL_PASS+TOTAL_FAIL))' >> $DIR/runner.sh
+echo 'echo; printf "Tests; Total: \033[1m${TOTAL}\033[0m Passes: \033[1m${TOTAL_PASS}\033[0m Fails: \033[1m${TOTAL_FAIL}\033[0m\n"' >> $DIR/runner.sh
+
+echo ' done!'
+
+printf 'Preparing workspace... '
+mkdir $DIR/workspace
+cp -r $(ls -1qA . | grep -v .git$ | tr \\n \ ) $DIR/workspace/
+cd $DIR/workspace/
+git init > /dev/null 2>&1
+git add . > /dev/null
+git commit -am "known state" > /dev/null
+echo ' done!'
+
+trap 'set +x; cd - > /dev/null; rm -fr $DIR >/dev/null 2>&1' 0
+trap 'exit 2' 1 2 3 15
+
+echo 'Executing runner...'
+sh $DIR/runner.sh

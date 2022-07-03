@@ -1,0 +1,172 @@
+
+name: Tests
+
+on:
+  workflow_dispatch: {}
+  pull_request: {}
+  push:
+    branches:
+      - main
+
+jobs:
+  mobile-static-resources-images:
+    name: Test Static Resources Images
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup
+        run: |
+          mkdir ./empty-folder
+
+      - name: Test missing argument
+        run: |
+          set +e
+          sh lane.d/mobile-static-resources-images > /dev/null
+          [ $? -eq 1 ] || exit 1
+
+      - name: Test non-existing ini file
+        run: |
+          set +e
+          sh lane.d/mobile-static-resources-images ./non-existing.file > /dev/null
+          [ $? -eq 1 ] || exit 1
+
+      - name: Test empty asset folder
+        run: |
+          echo 'INPUT=./empty-folder/' > ini
+          echo 'OUTPUT=./result' >> ini
+
+          set +e
+          sh lane.d/mobile-static-resources-images ini
+          [ $? -eq 0 ] || exit 1
+          diff -q .github/test-resources/mobile-static-resources-images/empty.swift result > /dev/null || { echo "Unexpected difference:"; diff .github/test-resources/mobile-static-resources-images/empty.swift result; exit 1; }
+
+      - name: Test with asset folder
+        run: |
+          echo 'INPUT=.github/test-resources/mobile-static-resources-images/assets' > ini
+          echo 'OUTPUT=./result' >> ini
+
+          set +e
+          sh lane.d/mobile-static-resources-images ini
+          [ $? -eq 0 ] || exit 1
+          diff -q .github/test-resources/mobile-static-resources-images/assets.swift result > /dev/null || { echo "Unexpected difference:"; diff .github/test-resources/mobile-static-resources-images/assets.swift result; exit 1; }
+
+      - name: Test creating output folder
+        run: |
+          echo 'INPUT=./empty-folder/' > ini
+          echo 'OUTPUT=./will/be/created' >> ini
+
+          set +e
+          sh lane.d/mobile-static-resources-images ini
+          [ $? -eq 0 ] || exit 1
+          [ -d "./will/be" ] || { echo "Output folder was not created"; exit 1; }
+
+  mobile-update-translations:
+    name: Test Update Translations
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Test missing argument
+        run: |
+          set +e
+          sh lane.d/mobile-update-translations > /dev/null
+          [ $? -eq 1 ] || exit 1
+
+      - name: Test non-existing ini file
+        run: |
+          set +e
+          sh lane.d/mobile-update-translations ./non-existing.file > /dev/null
+          [ $? -eq 1 ] || exit 1
+
+      - name: Test missing configuration for missing input
+        run: |
+          echo 'MAIN_LANGUAGE=EN' > ini
+          echo 'KEY_ROW=1' >> ini
+          echo 'CONFIGURATION=.github/test-resources/mobile-update-translations/configuration/mapping' >> ini
+          echo 'OUTPUT=result.swift' >> ini
+
+          set +e
+          sh lane.d/mobile-update-translations ini
+          [ $? -eq 1 ] || exit 1
+
+      - name: Test missing configuration for input not a file
+        run: |
+          echo 'INPUT=.github/test-resources/' > ini
+          echo 'MAIN_LANGUAGE=EN' >> ini
+          echo 'KEY_ROW=1' >> ini
+          echo 'CONFIGURATION=.github/test-resources/mobile-update-translations/configuration/mapping' >> ini
+          echo 'OUTPUT=result.swift' >> ini
+
+          set +e
+          sh lane.d/mobile-update-translations ini
+          [ $? -eq 1 ] || exit 1
+
+      - name: Test missing configuration for missing main language
+        run: |
+          echo 'INPUT=.github/test-resources/mobile-update-translations/configuration/input.csv' > ini
+          echo 'KEY_ROW=1' >> ini
+          echo 'CONFIGURATION=.github/test-resources/mobile-update-translations/configuration/mapping' >> ini
+          echo 'OUTPUT=result.swift' >> ini
+
+          set +e
+          sh lane.d/mobile-update-translations ini
+          [ $? -eq 1 ] || exit 1
+
+      - name: Test missing configuration for missing key row
+        run: |
+          echo 'INPUT=.github/test-resources/mobile-update-translations/configuration/input.csv' > ini
+          echo 'MAIN_LANGUAGE=EN' >> ini
+          echo 'CONFIGURATION=.github/test-resources/mobile-update-translations/configuration/mapping' >> ini
+          echo 'OUTPUT=result.swift' >> ini
+
+          set +e
+          sh lane.d/mobile-update-translations ini
+          [ $? -eq 1 ] || exit 1
+
+      - name: Test missing configuration for missing output
+        run: |
+          echo 'INPUT=.github/test-resources/mobile-update-translations/configuration/input.csv' > ini
+          echo 'MAIN_LANGUAGE=EN' >> ini
+          echo 'KEY_ROW=1' >> ini
+          echo 'CONFIGURATION=.github/test-resources/mobile-update-translations/configuration/mapping' >> ini
+
+          set +e
+          sh lane.d/mobile-update-translations ini
+          [ $? -eq 1 ] || exit 1
+
+      - name: Test ios output is created as expected
+        run: |
+          set +e
+          sh lane.d/mobile-update-translations .github/test-resources/mobile-update-translations/configuration/config.ini
+          [ $? -eq 0 ] || exit 1
+          diff -q .github/test-resources/mobile-update-translations/expected-ios/result.swift result.swift > /dev/null || { echo "Unexpected difference:"; diff .github/test-resources/mobile-update-translations/expected-ios/result.swift result.swift; exit 1; }
+          diff -q .github/test-resources/mobile-update-translations/expected-ios/result.EN.strings result.EN.strings > /dev/null || { echo "Unexpected difference:"; diff .github/test-resources/mobile-update-translations/expected-ios/result.EN.strings result.EN.strings; exit 1; }
+          diff -q .github/test-resources/mobile-update-translations/expected-ios/result.DA.strings result.DA.strings > /dev/null || { echo "Unexpected difference:"; diff .github/test-resources/mobile-update-translations/expected-ios/result.DA.strings result.DA.strings; exit 1; }
+
+      - name: Test android output is created as expected
+        run: |
+          echo android > .github/test-resources/mobile-update-translations/configuration/mapping/.type
+
+          set +e
+          sh lane.d/mobile-update-translations .github/test-resources/mobile-update-translations/configuration/config.ini
+          [ $? -eq 0 ] || exit 1
+          diff -q .github/test-resources/mobile-update-translations/expected-android/result.EN.strings result.EN.strings > /dev/null || { echo "Unexpected difference:"; diff .github/test-resources/mobile-update-translations/expected-android/result.EN.strings result.EN.strings; exit 1; }
+          diff -q .github/test-resources/mobile-update-translations/expected-android/result.DA.strings result.DA.strings > /dev/null || { echo "Unexpected difference:"; diff .github/test-resources/mobile-update-translations/expected-android/result.DA.strings result.DA.strings; exit 1; }
+
+  shell-run-github-workflow-tests:
+    name: Test Shell Run Github Workflow Tests (always skipped on GitHub)
+    runs-on: ubuntu-latest
+    if: ${{ false }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Test non-existing file
+        run: |
+          set +e
+          sh lane.d/shell-run-github-workflow-tests ./non-existing-file > /dev/null
+          [ $? -eq 1 ] || exit 1
+      - name: Test running tests
+        run: |
+          set -e
+          sh lane.d/shell-run-github-workflow-tests .github/test-resources/shell-run-github-workflow-tests/test.yaml

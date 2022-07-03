@@ -1,0 +1,38 @@
+#!/bin/sh
+
+set -e
+
+trap 'set +x; 2>&1' 0
+trap 'exit 2' 1 2 3 15
+
+_LOAD_CONFIGURATION_FILE()
+{
+    if [ ! -f "${1}" ]; then
+        echo "Add ${0}.ini for this lane to run"
+        exit 1
+    fi
+
+    export INPUT=$(grep -E '^INPUT\s?=' "${1}" | cut -d= -f2-)
+    export OUTPUT=$(grep -E '^OUTPUT\s?=' "${1}" | cut -d= -f2-)
+}
+
+_GENERATE_STRUCT()
+{
+    echo '// swiftlint:disable all'
+    echo 'import UIKit'
+    echo 'struct Images {'
+
+    find $INPUT -type d -iname "*.imageset" -print0 | while read -d $'\0' FILE; do
+        NAME=$(basename "$FILE" .imageset)
+        SAFE_NAME=$(echo "$NAME" | sed 's|-|_|g;s| |_|g')
+        printf "\tstatic let ${SAFE_NAME} = UIImage(named:\"${NAME}\")!\n"
+    done
+
+    echo '}'
+}
+
+_LOAD_CONFIGURATION_FILE "$1"
+
+OUTPUT_DIRECTORY=$(dirname "$OUTPUT")
+mkdir -p "$OUTPUT_DIRECTORY" 2>/dev/null
+_GENERATE_STRUCT > "$OUTPUT"
