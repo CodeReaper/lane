@@ -335,3 +335,11 @@ jobs:
       with:
         scandir: './lane.d'
         additional_files: 'lane'
+
+  tests-succeeded:
+    name: Tests Succeeded
+    needs: [lane, mobile-static-resources-images, mobile-update-translations, shell-github-action-semver-compare, shellcheck]
+    runs-on: ubuntu-latest
+    steps:
+      - name: All clear
+        run: exit 0
