@@ -96,5 +96,5 @@ jobs:
         if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: "v.${{ needs.version-check.outputs.version }}"
+          tag_name: "${{ needs.version-check.outputs.version }}"
           files: artifacts/*
