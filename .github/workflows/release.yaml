@@ -59,6 +59,11 @@ jobs:
           tail +2 lane >> bundle/lane
           chmod +x bundle/lane
 
+      - name: Verify version-injected-lane
+        run: |
+          sh bundle/lane -v | grep -qi unreleased
+          [ $? -ne 0 ] || exit 1
+
       - name: Package files
         run: |
           VERSION=$(cat version)
