@@ -26,7 +26,7 @@ jobs:
           MAIN=$(cat branch-main/version)
           VERSION=$(cat version)
 
-          sh lane.d/shell-github-action-semver-compare "$MAIN" "$VERSION"
+          sh lane.d/shell-github-action-semver-compare -m "$MAIN" -c "$VERSION"
 
       - name: Output version
         id: version
@@ -56,8 +56,13 @@ jobs:
         run: |
           VERSION='${{ needs.version-check.outputs.version }}'
           printf '#!/bin/sh\nVERSION=''%s''\n' "$VERSION" > bundle/lane
-          tail +4 lane >> bundle/lane
+          tail +2 lane >> bundle/lane
           chmod +x bundle/lane
+
+      - name: Verify version-injected-lane
+        run: |
+          sh bundle/lane -v | grep -iv unreleased
+          [ $? -eq 0 ] || exit 1
 
       - name: Package files
         run: |

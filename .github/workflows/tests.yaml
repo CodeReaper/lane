@@ -61,14 +61,6 @@ jobs:
           diff -q 1 2 || { echo "Unexpected difference:"; diff 1 2; exit 1; }
           diff -q 2 3 || { echo "Unexpected difference:"; diff 2 3; exit 1; }
 
-      - name: Test missing lanes directory
-        run: |
-          rm -rf lanes
-
-          set +e
-          sh ./lane > /dev/null
-          [ $? -eq 2 ] || exit 1
-
       - name: Test missing lane
         run: |
           rm -rf lanes
@@ -126,45 +118,48 @@ jobs:
         run: |
           mkdir ./empty-folder
 
-      - name: Test missing argument
+      - name: Test missing arguments
         run: |
           set +e
           sh lane.d/mobile-static-resources-images > /dev/null
-          [ $? -eq 1 ] || exit 1
+          [ $? -eq 2 ] || exit 1
 
-      - name: Test non-existing ini file
+      - name: Test missing input file
         run: |
           set +e
-          sh lane.d/mobile-static-resources-images ./non-existing.file > /dev/null
-          [ $? -eq 1 ] || exit 1
+          sh lane.d/mobile-static-resources-images -o result > /dev/null
+          [ $? -eq 2 ] || exit 1
+
+      - name: Test missing output file
+        run: |
+          set +e
+          sh lane.d/mobile-static-resources-images -i input > /dev/null
+          [ $? -eq 2 ] || exit 1
+
+      - name: Test non-existing input folder
+        run: |
+          set +e
+          sh lane.d/mobile-static-resources-images -i ./non-existing-folder -o result > /dev/null
+          [ $? -eq 3 ] || exit 1
 
       - name: Test empty asset folder
         run: |
-          echo 'INPUT=./empty-folder/' > ini
-          echo 'OUTPUT=./result' >> ini
-
           set +e
-          sh lane.d/mobile-static-resources-images ini
+          sh lane.d/mobile-static-resources-images -i empty-folder -o result
           [ $? -eq 0 ] || exit 1
           diff -q .github/test-resources/mobile-static-resources-images/empty.swift result > /dev/null || { echo "Unexpected difference:"; diff .github/test-resources/mobile-static-resources-images/empty.swift result; exit 1; }
 
       - name: Test with asset folder
         run: |
-          echo 'INPUT=.github/test-resources/mobile-static-resources-images/assets' > ini
-          echo 'OUTPUT=./result' >> ini
-
           set +e
-          sh lane.d/mobile-static-resources-images ini
+          sh lane.d/mobile-static-resources-images -i .github/test-resources/mobile-static-resources-images/assets -o result
           [ $? -eq 0 ] || exit 1
           diff -q .github/test-resources/mobile-static-resources-images/assets.swift result > /dev/null || { echo "Unexpected difference:"; diff .github/test-resources/mobile-static-resources-images/assets.swift result; exit 1; }
 
       - name: Test creating output folder
         run: |
-          echo 'INPUT=./empty-folder/' > ini
-          echo 'OUTPUT=./will/be/created' >> ini
-
           set +e
-          sh lane.d/mobile-static-resources-images ini
+          sh lane.d/mobile-static-resources-images -i empty-folder -o will/be/created
           [ $? -eq 0 ] || exit 1
           [ -d "./will/be" ] || { echo "Output folder was not created"; exit 1; }
 
@@ -178,74 +173,42 @@ jobs:
         run: |
           set +e
           sh lane.d/mobile-update-translations > /dev/null
-          [ $? -eq 1 ] || exit 1
-
-      - name: Test non-existing ini file
-        run: |
-          set +e
-          sh lane.d/mobile-update-translations ./non-existing.file > /dev/null
-          [ $? -eq 1 ] || exit 1
+          [ $? -eq 2 ] || exit 1
 
       - name: Test missing configuration for missing input
         run: |
-          echo 'MAIN_LANGUAGE=EN' > ini
-          echo 'KEY_ROW=1' >> ini
-          echo 'CONFIGURATION=.github/test-resources/mobile-update-translations/configuration/mapping' >> ini
-          echo 'OUTPUT=result.swift' >> ini
-
           set +e
-          sh lane.d/mobile-update-translations ini
-          [ $? -eq 1 ] || exit 1
+          sh lane.d/mobile-update-translations -t ios -k 1 -m EN -o result.swift -c "4 DA result.DA.strings" -c "3 EN result.EN.strings"
+          [ $? -eq 2 ] || exit 1
 
       - name: Test missing configuration for input not a file
         run: |
-          echo 'INPUT=.github/test-resources/' > ini
-          echo 'MAIN_LANGUAGE=EN' >> ini
-          echo 'KEY_ROW=1' >> ini
-          echo 'CONFIGURATION=.github/test-resources/mobile-update-translations/configuration/mapping' >> ini
-          echo 'OUTPUT=result.swift' >> ini
-
           set +e
-          sh lane.d/mobile-update-translations ini
-          [ $? -eq 1 ] || exit 1
+          sh lane.d/mobile-update-translations -t ios -k 1 -m EN -o result.swift -c "4 DA result.DA.strings" -c "3 EN result.EN.strings" -i .github/test-resources/
+          [ $? -eq 2 ] || exit 1
 
       - name: Test missing configuration for missing main language
         run: |
-          echo 'INPUT=.github/test-resources/mobile-update-translations/configuration/input.csv' > ini
-          echo 'KEY_ROW=1' >> ini
-          echo 'CONFIGURATION=.github/test-resources/mobile-update-translations/configuration/mapping' >> ini
-          echo 'OUTPUT=result.swift' >> ini
-
           set +e
-          sh lane.d/mobile-update-translations ini
-          [ $? -eq 1 ] || exit 1
+          sh lane.d/mobile-update-translations -t ios -k 1 -o result.swift -c "4 DA result.DA.strings" -c "3 EN result.EN.strings" -i .github/test-resources/mobile-update-translations/configuration/input.csv
+          [ $? -eq 2 ] || exit 1
 
       - name: Test missing configuration for missing key row
         run: |
-          echo 'INPUT=.github/test-resources/mobile-update-translations/configuration/input.csv' > ini
-          echo 'MAIN_LANGUAGE=EN' >> ini
-          echo 'CONFIGURATION=.github/test-resources/mobile-update-translations/configuration/mapping' >> ini
-          echo 'OUTPUT=result.swift' >> ini
-
           set +e
-          sh lane.d/mobile-update-translations ini
-          [ $? -eq 1 ] || exit 1
+          sh lane.d/mobile-update-translations -t ios -m EN -o result.swift -c "4 DA result.DA.strings" -c "3 EN result.EN.strings" -i .github/test-resources/mobile-update-translations/configuration/input.csv
+          [ $? -eq 2 ] || exit 1
 
       - name: Test missing configuration for missing output
         run: |
-          echo 'INPUT=.github/test-resources/mobile-update-translations/configuration/input.csv' > ini
-          echo 'MAIN_LANGUAGE=EN' >> ini
-          echo 'KEY_ROW=1' >> ini
-          echo 'CONFIGURATION=.github/test-resources/mobile-update-translations/configuration/mapping' >> ini
-
           set +e
-          sh lane.d/mobile-update-translations ini
-          [ $? -eq 1 ] || exit 1
+          sh lane.d/mobile-update-translations -t ios -k 1 -m EN -c "4 DA result.DA.strings" -c "3 EN result.EN.strings" -i .github/test-resources/mobile-update-translations/configuration/input.csv
+          [ $? -eq 2 ] || exit 1
 
       - name: Test ios output is created as expected
         run: |
           set +e
-          sh lane.d/mobile-update-translations .github/test-resources/mobile-update-translations/configuration/config.ini
+          sh lane.d/mobile-update-translations -t ios -k 1 -m EN -o result.swift -c "4 DA result.DA.strings" -c "3 EN result.EN.strings" -i .github/test-resources/mobile-update-translations/configuration/input.csv
           [ $? -eq 0 ] || exit 1
           diff -q .github/test-resources/mobile-update-translations/expected-ios/result.swift result.swift > /dev/null || { echo "Unexpected difference:"; diff .github/test-resources/mobile-update-translations/expected-ios/result.swift result.swift; exit 1; }
           diff -q .github/test-resources/mobile-update-translations/expected-ios/result.EN.strings result.EN.strings > /dev/null || { echo "Unexpected difference:"; diff .github/test-resources/mobile-update-translations/expected-ios/result.EN.strings result.EN.strings; exit 1; }
@@ -253,10 +216,8 @@ jobs:
 
       - name: Test android output is created as expected
         run: |
-          echo android > .github/test-resources/mobile-update-translations/configuration/mapping/.type
-
           set +e
-          sh lane.d/mobile-update-translations .github/test-resources/mobile-update-translations/configuration/config.ini
+          sh lane.d/mobile-update-translations -t android -k 1 -c "4 DA result.DA.strings" -c "3 EN result.EN.strings" -i .github/test-resources/mobile-update-translations/configuration/input.csv
           [ $? -eq 0 ] || exit 1
           diff -q .github/test-resources/mobile-update-translations/expected-android/result.EN.strings result.EN.strings > /dev/null || { echo "Unexpected difference:"; diff .github/test-resources/mobile-update-translations/expected-android/result.EN.strings result.EN.strings; exit 1; }
           diff -q .github/test-resources/mobile-update-translations/expected-android/result.DA.strings result.DA.strings > /dev/null || { echo "Unexpected difference:"; diff .github/test-resources/mobile-update-translations/expected-android/result.DA.strings result.DA.strings; exit 1; }
@@ -271,12 +232,11 @@ jobs:
       - name: Test non-existing file
         run: |
           set +e
-          sh lane.d/shell-run-github-workflow-tests ./non-existing-file > /dev/null
+          sh lane.d/shell-run-github-workflow-tests -i ./non-existing-file > /dev/null
           [ $? -eq 1 ] || exit 1
       - name: Test running tests
         run: |
-          set -e
-          sh lane.d/shell-run-github-workflow-tests .github/test-resources/shell-run-github-workflow-tests/test.yaml
+          sh lane.d/shell-run-github-workflow-tests -i .github/test-resources/shell-run-github-workflow-tests/test.yaml
   
   shell-github-action-semver-compare:
     name: Test Shell Github Action Semver Compare
@@ -288,36 +248,36 @@ jobs:
         run: |
           set +e
           sh lane.d/shell-github-action-semver-compare > /dev/null
-          [ $? -eq 1 ] || exit 1
+          [ $? -eq 2 ] || exit 1
 
       - name: Test missing main version argument
         run: |
           set +e
-          sh lane.d/shell-github-action-semver-compare "" "0.0.0" > /dev/null
-          [ $? -eq 0 ] || exit 1
+          sh lane.d/shell-github-action-semver-compare -c "0.0.0" > /dev/null
+          [ $? -eq 2 ] || exit 1
 
       - name: Test missing current version argument
         run: |
           set +e
-          sh lane.d/shell-github-action-semver-compare "0.0.0" "" > /dev/null
-          [ $? -eq 1 ] || exit 1
+          sh lane.d/shell-github-action-semver-compare -m "0.0.0" > /dev/null
+          [ $? -eq 2 ] || exit 1
 
       - name: Test matching versions
         run: |
           set +e
-          sh lane.d/shell-github-action-semver-compare "0.0.0" "0.0.0" > /dev/null
+          sh lane.d/shell-github-action-semver-compare -m "0.0.0" -c "0.0.0" > /dev/null
           [ $? -eq 10 ] || exit 1
 
       - name: Test descending versions
         run: |
           set +e
-          sh lane.d/shell-github-action-semver-compare "1.2.3" "0.0.0" > /dev/null
+          sh lane.d/shell-github-action-semver-compare -m "1.2.3" -c "0.0.0" > /dev/null
           [ $? -eq 20 ] || exit 1
 
       - name: Test ascending versions
         run: |
           set +e
-          sh lane.d/shell-github-action-semver-compare "1.2.3" "3.2.1" > /dev/null
+          sh lane.d/shell-github-action-semver-compare -m "1.2.3" -c "3.2.1" > /dev/null
           [ $? -eq 0 ] || exit 1
 
   shellcheck:

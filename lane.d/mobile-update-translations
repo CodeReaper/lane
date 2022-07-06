@@ -1,123 +1,130 @@
 #!/bin/sh
-set -e
 
 TMP=$(mktemp -dq)
-export TMP
-
 trap 'set +x; rm -rf $TMP 2>/dev/null 2>&1' 0
 trap 'exit 2' 1 2 3 15
 
-_LOAD_CONFIGURATION_FILE()
-{
-    if [ ! -f "${1}" ]; then
-        echo "Add ${0}.ini for this lane to run"
-        exit 1
-    fi
-
-    INPUT=$(grep -E '^INPUT\s?=' "${1}" | cut -d= -f2-)
-    MAIN_LANGUAGE=$(grep -E '^MAIN_LANGUAGE\s?=' "${1}" | cut -d= -f2-)
-    KEY_ROW=$(grep -E '^KEY_ROW\s?=' "${1}" | cut -d= -f2-)
-    CONFIGURATION=$(grep -E '^CONFIGURATION\s?=' "${1}" | cut -d= -f2-)
-    OUTPUT=$(grep -E '^OUTPUT\s?=' "${1}" | cut -d= -f2-)
-    export INPUT OUTPUT KEY_ROW CONFIGURATION OUTPUT
+_USAGE() {
+cat << END
+OPTIONS
+    -h show this usage
+    -t type ios|android
+    -i input file
+    -c configuration - space separated string consisting of row, language and output path
+    -b better
+    -k key row
+    -m main language (for ios only)
+    -o output file (for ios only)
+END
 }
 
-_CHECK_ARGUMENTS()
-{
-    if [ -z "$INPUT" ] || [ ! -f "$INPUT" ]; then
-        echo "Configuration setting for 'INPUT' is missing or not a directory. Found: $INPUT"
-        exit 1
+unset -v TYPE
+unset -v INPUT
+unset -v KEY_ROW
+unset -v MAIN_LANGUAGE
+unset -v OUTPUT
+unset -v BETTER
+while getopts "ht:i:c:k:m:o:" option; do
+    case $option in
+        c) echo "$OPTARG" >> "$TMP/mapping" ;;
+        t) TYPE=$OPTARG ;;
+        i) INPUT=$OPTARG ;;
+        k) KEY_ROW=$OPTARG ;;
+        m) MAIN_LANGUAGE=$OPTARG ;;
+        o) OUTPUT=$OPTARG ;;
+        \?)
+          echo "unknown option: $option"
+          _USAGE
+          exit 1
+          ;;
+        h)
+          _USAGE
+          exit 0
+          ;;
+    esac
+done
+shift $((OPTIND - 1))
+
+if [ ! "$TYPE" = "ios" ] && [ ! "$TYPE" = "android" ]; then
+    printf 'Provide ios or android as type.\n\n'
+    _USAGE
+    exit 2
+fi
+
+if [ "$TYPE" = "ios" ]; then
+    if [ -z "$MAIN_LANGUAGE" ]; then
+        printf 'Provide main language.\n\n'
+        _USAGE
+        exit 2
     fi
-    if [ "$OUTPUT_TYPE" = "ios" ]; then
-        if [ -z "$MAIN_LANGUAGE" ]; then
-            echo "Configuration setting for 'MAIN_LANGUAGE' is missing."
-            exit 1
-        fi
-        if [ -z "$KEY_ROW" ]; then
-            echo "Configuration setting for 'KEY_ROW' is missing."
-            exit 1
-        fi
-        if [ -z "$OUTPUT" ]; then
-            echo "Configuration setting for 'OUTPUT' is missing."
-            exit 1
-        fi
+    if [ -z "$OUTPUT" ]; then
+        printf 'Provide output file.\n\n'
+        _USAGE
+        exit 2
     fi
+fi
+
+if [ ! -f "$INPUT" ]; then
+    printf 'Provide input file.\n\n'
+    _USAGE
+    exit 2
+fi
+
+if [ -z "$KEY_ROW" ]; then
+    printf 'Provide key row.\n\n'
+    _USAGE
+    exit 2
+fi
+
+_MKDIR() {
+    DIRECTORY=$(dirname "$1")
+    mkdir -p "$DIRECTORY" 2>/dev/null
 }
 
-_CHECK_CONFIGURATION()
-{
-    if [ -z "$1" ]; then
-        echo "Configuration file is missing the 'CONFIGURATION' setting."
-        exit 1
-    fi
-
-    if [ ! -d "$1/input" ] || [ ! -d "$1/output" ]; then
-        echo "The 'CONFIGURATION' setting must point to a directory with both an input and an output directory."
-        exit 1
-    fi
-
-    if [ ! -f "$1/.type" ]; then
-        echo "The 'CONFIGURATION' setting must point to a .type file containing the output type."
-        exit 1
-    fi
-
-    if grep -qi 'ios' "$1/.type"; then
-        export OUTPUT_TYPE=ios
-    elif grep -qi 'android' "$1/.type"; then
-        export OUTPUT_TYPE=android
-    else
-        printf "The output type is not supported, found: "
-        cat "$1/.type"
-        echo
-        exit 1
-    fi
+_UNPACK_CSV() {
+    while read -r ITEM; do
+        LANG=$(echo "$ITEM" | cut -d\  -f2)
+        OFFSET=$(echo "$ITEM" | cut -d\  -f1 | tr -d "[:blank:]")
+        tail +2 "./$INPUT" | grep -v ^$ | sed 's|\\;|\\\\\\|g' | cut -d\; -f"$KEY_ROW,$OFFSET" | sed 's|\\\\\\|;|g' | sort > "${TMP}/${LANG}.csv"
+    done < "${TMP}/mapping"
 }
 
-_UNPACK_CSV()
-{
-    find "$CONFIGURATION/input" -type f -exec sh -c '
-        OFFSET=$(cat "$1" | tr -d "[:blank:]")
-        LANG=$(basename "$1")
-        tail +2 "./$INPUT" | grep -v ^$ | sed '\''s|\\;|\\\\\\|g'\'' | cut -d\; -f$KEY_ROW,$OFFSET | sed '\''s|\\\\\\|;|g'\'' | sort > "${TMP}/${LANG}.csv"
-    ' -- {} \;
-}
+_GENERATE_XML() {
+    while read -r ITEM; do
+        LANG=$(echo "$ITEM" | cut -d\  -f2)
+        FILE=$(echo "$ITEM" | cut -d\  -f3- | tr -d "[:blank:]")
 
-_GENERATE_XML()
-{
-    find "$CONFIGURATION/output" -type f  -exec sh -c '
-        LANG=$(basename "$1")
-        FILE=$(cat "$1" | tr -d "[:blank:]")
-        OUTPUT_DIRECTORY=$(dirname "$FILE")
-        mkdir -p "$OUTPUT_DIRECTORY" 2>/dev/null
+        _MKDIR "$FILE"
+
         echo "<resources>" > "$FILE"
-        cat "${TMP}/${LANG}.csv"| while read LINE; do
+        while read -r LINE; do
             KEY=$(echo "$LINE" | cut -d\; -f1 | tr "[:upper:]" "[:lower:]")
-            VALUE=$(echo "$LINE" | cut -d\; -f2- | sed -E '\''s|(%[0-9]+)|\1$s|g;s|%|%%|g'\'')
-            printf "\t<string name=\"$KEY\">$VALUE</string>\n" >> "$FILE"
-        done
+            VALUE=$(echo "$LINE" | cut -d\; -f2- | sed -E 's|(%[0-9]+)|\1$s|g')
+            printf "\t<string name=\"%s\">%s</string>\n" "$KEY" "$VALUE" >> "$FILE"
+        done < "${TMP}/${LANG}.csv"
         echo "</resources>" >> "$FILE"
-    ' -- {} \;
+
+    done < "${TMP}/mapping"
 }
 
-_GENERATE_STRINGS()
-{
-    find "$CONFIGURATION/output" -type f -exec sh -c '
-        LANG=$(basename "$1")
-        cat "$1" | grep -v ^$ | while read FILE; do
-            OUTPUT_DIRECTORY=$(dirname "$FILE")
-            mkdir -p "$OUTPUT_DIRECTORY" 2>/dev/null
-            printf "" > "$FILE"
-            cat "${TMP}/${LANG}.csv"| while read LINE; do
-                KEY=$(echo "$LINE" | cut -d\; -f1)
-                VALUE=$(echo "$LINE" | cut -d\; -f2- | sed '\''s|\"|\\"|g'\'')
-                echo "\"$KEY\" = \"$VALUE\";" >> "$FILE"
-            done
-        done
-    ' -- {} \;
+_GENERATE_STRINGS() {
+    while read -r ITEM; do
+        LANG=$(echo "$ITEM" | cut -d\  -f2)
+        FILE=$(echo "$ITEM" | cut -d\  -f3- | tr -d "[:blank:]")
+
+        _MKDIR "$FILE"
+
+        printf "" > "$FILE"
+        while read -r LINE; do
+            KEY=$(echo "$LINE" | cut -d\; -f1)
+            VALUE=$(echo "$LINE" | cut -d\; -f2- | sed 's|\"|\\"|g')
+            echo "\"$KEY\" = \"$VALUE\";" >> "$FILE"
+        done < "${TMP}/${LANG}.csv"
+
+    done < "${TMP}/mapping"
 }
 
-_GENERATE_STRUCT()
-{
+_GENERATE_STRUCT() {
     echo '// swiftlint:disable all'
     echo 'import Foundation'
     echo 'struct Translations {'
@@ -142,22 +149,15 @@ _GENERATE_STRUCT()
     echo '}'
 }
 
-_LOAD_CONFIGURATION_FILE "$1"
-
-_CHECK_CONFIGURATION "$CONFIGURATION"
-
-_CHECK_ARGUMENTS
-
 _UNPACK_CSV
 
-if [ "$OUTPUT_TYPE" = "ios" ]; then
+if [ "$TYPE" = "ios" ]; then
     _GENERATE_STRINGS
 
-    OUTPUT_DIRECTORY=$(dirname "$OUTPUT")
-    mkdir -p "$OUTPUT_DIRECTORY" 2>/dev/null
+    _MKDIR "$OUTPUT"
     _GENERATE_STRUCT > "$OUTPUT"
 fi
 
-if [ "$OUTPUT_TYPE" = "android" ]; then
+if [ "$TYPE" = "android" ]; then
     _GENERATE_XML
 fi
