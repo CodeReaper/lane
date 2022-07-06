@@ -16,12 +16,8 @@ unset -v INPUT
 unset -v OUTPUT
 while getopts "hi:o:" option; do
     case $option in
-        i)
-          INPUT=$OPTARG
-          ;;
-        o)
-          OUTPUT=$OPTARG
-          ;;
+        i) INPUT=$OPTARG ;;
+        o) OUTPUT=$OPTARG ;;
         \?)
           echo "unknown option: $option"
           _USAGE

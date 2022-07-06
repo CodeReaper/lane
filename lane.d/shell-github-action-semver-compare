@@ -1,15 +1,37 @@
 #!/bin/sh
 
-MAIN=$(echo "$1" | sed 's|[^0-9\.]||g')
-CURRENT=$(echo "$2" | sed 's|[^0-9\.]||g')
+_USAGE() {
+cat << END
+OPTIONS
+    -h show this usage
+    -m main version
+    -c current version
+END
+}
 
-if [ -z "$CURRENT" ]; then
-    echo 'Was not given a current version'
-    exit 1
-fi
+unset -v MAIN
+unset -v CURRENT
+while getopts "hm:c:" option; do
+    case $option in
+        m) MAIN=$OPTARG ;;
+        c) CURRENT=$OPTARG ;;
+        \?)
+          echo "unknown option: $option"
+          _USAGE
+          exit 1
+          ;;
+        h)
+          _USAGE
+          exit 0
+          ;;
+    esac
+done
+shift $((OPTIND - 1))
 
-if [ -z "$MAIN" ]; then
-    exit 0
+if [ -z "$MAIN" ] || [ -z "$CURRENT" ]; then
+    printf 'Provide both main and current versions.\n\n'
+    _USAGE
+    exit 2
 fi
 
 echo '::group::Resolved versions'
@@ -18,7 +40,7 @@ echo '::endgroup::'
 
 [ "$MAIN" = "$CURRENT" ] && { echo 'Version must be changed.'; exit 10; }
 
-VERIFY=$(printf '%s\n%s' "$MAIN" "$CURRENT" | sort -t '.' -k 1,1 -k 2,2 -k 3,3 -k 4,4 -g | tail -n1)
+VERIFY=$(printf '%s\n%s' "$MAIN" "$CURRENT" | sort -t '.' -k 1,1 -k 2,2 -k 3,3 -k 4,4 -k 5,5 -g | tail -n1)
 [ "$MAIN" = "$VERIFY" ] && { echo 'Version must be greater than version on main.'; exit 20; }
 
 exit 0

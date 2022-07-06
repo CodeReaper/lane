@@ -1,6 +1,4 @@
 #!/bin/sh
-VERSION='unreleased'
-# DANGER: LINES ABOVE MUST BE ALIGNED WITH RELEASE BUILD
 
 OLD_PWD=$(pwd)
 LANED_PWD="${0}.d"
@@ -16,7 +14,7 @@ _DISPLAY_HELP()
 
 _DISPLAY_VERSION()
 {
-    echo "Version: $VERSION"
+    echo "Version: ${VERSION:-unreleased}"
 }
 
 _DISPLAY_LANES()
