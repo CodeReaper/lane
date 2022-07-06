@@ -237,7 +237,7 @@ jobs:
       - name: Test running tests
         run: |
           sh lane.d/shell-run-github-workflow-tests -i .github/test-resources/shell-run-github-workflow-tests/test.yaml
-  
+
   shell-github-action-semver-compare:
     name: Test Shell Github Action Semver Compare
     runs-on: ubuntu-latest

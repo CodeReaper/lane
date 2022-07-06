@@ -6,5 +6,12 @@
 	"remoteUser": "vscode",
 	"remoteEnv": {
 		"PATH": "${containerEnv:PATH}:/workspaces/lane"
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"EditorConfig.EditorConfig"
+			]
+		}
 	}
 }
