@@ -1,31 +1,20 @@
 #!/bin/sh
 
-# Takes one argument:
-#   - file:
-#       The workflow file which contains the tests to run.
-#       Must be a workflow file with script-based tests.
-#       Examples:
-#           - workflow.yaml
-#           - ../workflow.yaml
-
-# Output example:
-# Name of a job
-#  - Name of a step: Pass
-#  - Name of a failing step: Fail
-
-
 _USAGE() {
 cat << END
 OPTIONS
     -h show this usage
     -i workflow file
+    -j job id
 END
 }
 
 unset -v FILE
-while getopts "hi:" option; do
+unset -v JOBID
+while getopts "hi:j:" option; do
     case $option in
-        i) FILE=$OPTARG ;;
+        i) FILE="$OPTARG" ;;
+        j) JOBID="$OPTARG" ;;
         \?)
           echo "unknown option: $option"
           _USAGE
@@ -80,9 +69,17 @@ yq -o json "$FILE" | jq -rc '.jobs | to_entries[] | [{group: .key, groupName: .v
     } >> "$DIR/runner.sh"
 
     {
-      echo "echo; echo '$GROUP_NAME'"
+      echo "echo; echo '$GROUP_NAME ($GROUP)'"
       echo "GREEN=$'\e[0;32m'; RED=$'\e[0;31m'; NC=$'\e[0m'; PASS=0; FAIL=0"
     } > "${DIR}/${GROUP}.sh"
+
+    if [ -n "$JOBID" ] && [ ! "$JOBID" = "$GROUP" ]; then
+      {
+        echo "echo ' - Skipped'"
+        echo "printf 0 > '${DIR}/PASS'; printf 0 > '${DIR}/FAIL'"
+      } >> "${DIR}/${GROUP}.sh"
+      continue
+    fi
 
     I=0
     printf '%s\n' "$JOB" | jq -rc '.script[] | select(.run != null)' | while read -r STEP; do
