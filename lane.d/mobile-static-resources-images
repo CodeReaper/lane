@@ -51,11 +51,11 @@ mkdir -p "$OUTPUT_DIRECTORY" 2>/dev/null
     echo 'import UIKit'
     echo 'struct Images {'
 
-    find "$INPUT" -type d -iname "*.imageset" -exec sh -c '
-        NAME=$(basename "$1" .imageset)
-        SAFE_NAME=$(echo $NAME | sed '\''s/-/_/g;s/ /_/g'\'')
-        printf "\tstatic let ${SAFE_NAME} = UIImage(named:\"${NAME}\")!\n"
-    ' -- {} \;
+    find "$INPUT" -type d -iname "*.imageset" | while read -r ITEM; do
+      NAME=$(basename "$ITEM" .imageset)
+      SAFE_NAME=$(echo "$NAME" | sed 's/-/_/g;s/ /_/g')
+      printf "\tstatic let %s = UIImage(named:\"%s\")!\n" "$SAFE_NAME" "$NAME"
+    done
 
     echo '}'
 } > "$OUTPUT"
