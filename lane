@@ -1,7 +1,7 @@
 #!/bin/sh
 
 OLD_PWD=$(pwd)
-LANED_PWD="${0}.d"
+LANED_PWD=$(realpath "${0}.d")
 
 trap 'set +x; cd "$OLD_PWD" >/dev/null 2>&1; rm -rf $TMP >/dev/null 2>&1' 0
 trap 'exit 2' 1 2 3 15
@@ -20,7 +20,11 @@ _DISPLAY_VERSION()
 _DISPLAY_LANES()
 {
     echo "The available lanes are:"
-    find lanes -type f -maxdepth 1 | sed 's|^lanes/||g;s|^|  |g' | grep -vE '\.ini$'
+    if [ -d lanes ]; then
+      find lanes -type f -maxdepth 1 | sed 's|^lanes/||g;s|^|  |g'
+    else
+      echo '  No lanes found.'
+    fi
 }
 
 if [ "$1" = "-h" ] || [ "$1" = "--help" ] || [ "$1" = "help" ]; then
@@ -44,7 +48,7 @@ fi
 
 LANES_PWD=$(pwd)
 
-for TARGET in "${LANED_PWD}/$1" "${LANES_PWD}/lanes/$1"; do
+for TARGET in "${LANED_PWD}/$1/run.sh" "${LANES_PWD}/lanes/$1"; do
     if [ -f "$TARGET" ]; then
         shift
         sh "$TARGET" "$@"
