@@ -1,0 +1,56 @@
+#!/bin/sh
+
+_USAGE() {
+cat << END
+OPTIONS
+    -h show this usage
+    -o output path
+    -i document id
+    -t bearer token, see google-api-jwt-generate
+    -f format, default csv
+END
+}
+
+unset -v OUTPUT ID TOKEN
+FORMAT='csv'
+while getopts "hi:t:f:o:" option; do
+  case $option in
+    o) OUTPUT="$OPTARG" ;;
+    i) ID="$OPTARG" ;;
+    t) TOKEN="$OPTARG" ;;
+    f) FORMAT="$OPTARG" ;;
+    \?)
+      echo "unknown option: $option"
+      _USAGE
+      exit 1
+      ;;
+    h)
+      _USAGE
+      exit 0
+      ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+if [ -z "$ID" ] || [ -z "$TOKEN" ]; then
+    echo "Must provide both a document id and an authentication key."
+    _USAGE
+    exit 1
+fi
+
+for command in curl; do
+  if ! [ -x "$(command -v $command)" ]; then
+    echo "Error: $command is not installed." >&2
+    exit 1
+  fi
+done
+
+DIR=$(mktemp -dq)
+
+trap 'set +x; rm -fr $DIR >/dev/null 2>&1' 0
+trap 'exit 2' 1 2 3 15
+
+url=$(printf 'https://docs.google.com/spreadsheets/d/%s/export?exportFormat=%s' "$ID" "$FORMAT")
+header=$(printf 'Authorization: Bearer %s' "$TOKEN")
+
+curl --silent -L -o "$OUTPUT" --header "$header" "$url"

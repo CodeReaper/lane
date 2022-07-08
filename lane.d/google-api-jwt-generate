@@ -1,0 +1,82 @@
+#!/bin/sh
+
+_USAGE() {
+cat << END
+OPTIONS
+    -h show this usage
+    -i issuer
+    -s scope(s)
+    -p p12 key
+More information at https://developers.google.com/identity/protocols/oauth2/service-account
+END
+}
+
+unset -v ISSUER SCOPES P12 GOOGLE_API_TOKEN
+while getopts "hi:s:p:" option; do
+  case $option in
+    i) ISSUER="$OPTARG" ;;
+    s) SCOPES="$OPTARG" ;;
+    p) P12="$OPTARG" ;;
+    \?)
+      echo "unknown option: $option"
+      _USAGE
+      exit 1
+      ;;
+    h)
+      _USAGE
+      exit 0
+      ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+if [ -z "$ISSUER" ] || [ -z "$SCOPES" ]; then
+    echo "Must provide both issuer and scopes."
+    _USAGE
+    exit 1
+fi
+
+if [ ! -f "$P12" ]; then
+    echo "Must provide a p12 file."
+    _USAGE
+    exit 1
+fi
+
+for command in curl base64 openssl jq; do
+  if ! [ -x "$(command -v $command)" ]; then
+    echo "Error: $command is not installed." >&2
+    exit 1
+  fi
+done
+
+DIR=$(mktemp -dq)
+
+trap 'set +x; rm -fr $DIR >/dev/null 2>&1' 0
+trap 'exit 2' 1 2 3 15
+
+encode() {
+  base64 - | tr -d '\n=' | tr '/+' '_-'
+}
+
+header='{"alg":"RS256","typ":"JWT"}'
+claim=$(printf '{
+  "iss": "%s",
+  "scope": "%s",
+  "aud": "https://oauth2.googleapis.com/token",
+  "exp": %s,
+  "iat": %s
+}' "$ISSUER" "$SCOPES" $(date -d +5mins +"%s") $(date +"%s"))
+header64=$(echo "$header"|encode)
+claim64=$(echo "$claim"|encode)
+
+printf '%s.%s' "${header64}" "${claim64}" > "$DIR/request"
+printf '%s.%s.' "${header64}" "${claim64}" > "$DIR/token"
+
+openssl pkcs12 -in "$P12" -out "$DIR/privatekey" -nocerts -nodes -passin pass:notasecret
+openssl dgst -sha256 -sign "$DIR/privatekey" -out - "$DIR/request" | encode >> "$DIR/token"
+
+token=$(cat "$DIR/token")
+
+curl --silent -d "grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=$token" https://oauth2.googleapis.com/token | jq -r '.access_token' > "$DIR/token"
+
+cat "$DIR/token"

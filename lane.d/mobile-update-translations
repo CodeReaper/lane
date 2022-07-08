@@ -11,7 +11,6 @@ OPTIONS
     -t type ios|android
     -i input file
     -c configuration - space separated string consisting of row, language and output path
-    -b better
     -k key row
     -m main language (for ios only)
     -o output file (for ios only)
