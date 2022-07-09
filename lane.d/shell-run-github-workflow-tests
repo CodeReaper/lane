@@ -1,5 +1,12 @@
 #!/bin/sh
 
+for command in git yq jq; do
+  if ! [ -x "$(command -v $command)" ]; then
+    echo "Error: $command is not installed." >&2
+    exit 1
+  fi
+done
+
 _USAGE() {
 cat << END
 OPTIONS
@@ -41,17 +48,8 @@ fi
 
 DIR=$(mktemp -dq)
 
-rm -fr "${DIR:?}/"* > /dev/null
-mkdir -p "$DIR" > /dev/null
 trap 'set +x; rm -fr $DIR >/dev/null 2>&1' 0
 trap 'exit 2' 1 2 3 15
-
-for command in git yq jq; do
-  if ! [ -x "$(command -v $command)" ]; then
-    echo "Error: $command is not installed." >&2
-    exit 1
-  fi
-done
 
 set -e
 
