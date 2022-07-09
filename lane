@@ -40,17 +40,16 @@ if [ -d "$builtin_lane" ]; then
 
   for i in "$@"; do
     if [ "$i" = "-h" ]; then
-      cat "$builtin_lane/help.md" | grep -v '^```'
+      grep -v '^```' <"$builtin_lane/help.md"
       exit 0
     fi
   done
 
-  export LANE_SIGNAL_LIST_OPTIONS=101
   set +e
   sh "$builtin_lane/run.sh" "$@"
   status=$?
-  if [ $status -eq $LANE_SIGNAL_LIST_OPTIONS ]; then
-    cat "$builtin_lane/options.md" | grep -v '^```'
+  if [ $status -eq 111 ]; then
+    grep -v '^```' <"$builtin_lane/options.md"
     exit 1
   fi
   exit $status

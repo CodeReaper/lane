@@ -13,7 +13,7 @@ while getopts "i:j:" option; do
   case $option in
   i) FILE="$OPTARG" ;;
   j) JOBID="$OPTARG" ;;
-  \?) exit $LANE_SIGNAL_LIST_OPTIONS ;;
+  \?) exit 111 ;;
   esac
 done
 shift $((OPTIND - 1))
@@ -25,7 +25,7 @@ if [ ! -f "$FILE" ]; then
   else
     echo
   fi
-  exit $LANE_SIGNAL_LIST_OPTIONS
+  exit 111
 fi
 
 DIR=$(mktemp -dq)

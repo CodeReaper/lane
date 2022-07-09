@@ -21,14 +21,14 @@ DESCRIPTION
 
 OPTIONS
 ```
-  -h
-    Shows this help.
+    -h
+        Shows this help.
 
-  -i
-    A path to a GitHub workflow file.
+    -i
+        A path to a GitHub workflow file.
 
-  -j
-    An ID of a job in the provided workflow file. Will limit the execution to just the steps in this job.
+    -j
+        An ID of a job in the provided workflow file. Will limit the execution to just the steps in this job.
 ```
 
 EXAMPLES
@@ -47,7 +47,7 @@ If the contents of `test.yaml` is:
         name: Test run
         runs-on: ubuntu-latest
         steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v3 # steps without the 'run' is ignored
 
         - name: Test that passes
             run: |
@@ -58,13 +58,7 @@ If the contents of `test.yaml` is:
             exit 1
 ```
 
-The output of:
-
-```
-    lane shell-run-github-workflow-tests -i test.yaml
-```
-
-Will be:
+The output would be:
 
 ```
     Preparing runnner... done!
