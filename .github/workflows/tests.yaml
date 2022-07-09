@@ -1,4 +1,3 @@
-
 name: Tests
 
 on:
@@ -110,6 +109,30 @@ jobs:
           echo 'true' > expected
           diff -q expected result || { echo "Unexpected difference:"; diff expected result; exit 1; }
 
+  lane-d-requirements:
+    name: Test lane.d Requirements
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Validate builtins has an entry point
+        run: |
+          find lane.d -mindepth 1 -maxdepth 1 -type d -exec sh -c 'test -f "$1/run.sh" || echo "$1"' -- {} \; > missing
+          count=$(wc -l missing | cut -d\  -f1)
+          [ $count -eq 0 ] || { cat missing; exit 1; }
+
+      - name: Validate builtins has options descriptions
+        run: |
+          find lane.d -mindepth 1 -maxdepth 1 -type d -exec sh -c 'test -f "$1/options.md" || echo "$1"' -- {} \; > missing
+          count=$(wc -l missing | cut -d\  -f1)
+          [ $count -eq 0 ] || { cat missing; exit 1; }
+
+      - name: Validate builtins has help available
+        run: |
+          find lane.d -mindepth 1 -maxdepth 1 -type d -exec sh -c 'test -f "$1/help.md" || echo "$1"' -- {} \; > missing
+          count=$(wc -l missing | cut -d\  -f1)
+          [ $count -eq 0 ] || { cat missing; exit 1; }
+
   google-api-docs-sheets-download:
     name: Test Google API Docs Sheets Download
     runs-on: ubuntu-latest
@@ -119,25 +142,25 @@ jobs:
       - name: Test missing arguments
         run: |
           set +e
-          sh lane.d/google-api-docs-sheets-download > /dev/null
+          sh lane.d/google-api-docs-sheets-download/run.sh > /dev/null
           [ $? -eq 2 ] || exit 1
 
       - name: Test missing output file
         run: |
           set +e
-          sh lane.d/google-api-docs-sheets-download -t a-token -i an-id > /dev/null
+          sh lane.d/google-api-docs-sheets-download/run.sh -t a-token -i an-id > /dev/null
           [ $? -eq 2 ] || exit 1
 
       - name: Test missing document id
         run: |
           set +e
-          sh lane.d/google-api-docs-sheets-download -t a-token -o result > /dev/null
+          sh lane.d/google-api-docs-sheets-download/run.sh -t a-token -o result > /dev/null
           [ $? -eq 2 ] || exit 1
 
       - name: Test missing token
         run: |
           set +e
-          sh lane.d/google-api-docs-sheets-download -i an-id -o result > /dev/null
+          sh lane.d/google-api-docs-sheets-download/run.sh -i an-id -o result > /dev/null
           [ $? -eq 2 ] || exit 1
 
       - name: Test missing curl command
@@ -147,7 +170,7 @@ jobs:
           chmod -x .github/test-mocks/curl/curl
 
           set +e
-          sh lane.d/google-api-docs-sheets-download -t a-token -i an-id -o result > /dev/null
+          sh lane.d/google-api-docs-sheets-download/run.sh -t a-token -i an-id -o result > /dev/null
           [ $? -eq 3 ] || exit 1
 
       - name: Test google api curl error
@@ -156,7 +179,7 @@ jobs:
           export CURL_OVERRIDE=fail
 
           set +e
-          sh lane.d/google-api-docs-sheets-download -t a-token -i an-id -o result
+          sh lane.d/google-api-docs-sheets-download/run.sh -t a-token -i an-id -o result
           [ $? -eq 22 ] || exit 1
 
       - name: Test generated output matches expectation
@@ -168,7 +191,7 @@ jobs:
           export CURL_OVERRIDE=expected
 
           set +e
-          sh lane.d/google-api-docs-sheets-download -t a-token -i an-id -o result
+          sh lane.d/google-api-docs-sheets-download/run.sh -t a-token -i an-id -o result
           [ $? -eq 0 ] || exit 1
           diff -q expected result > /dev/null || { echo "Unexpected difference:"; diff expected result; exit 1; }
 
@@ -180,7 +203,7 @@ jobs:
           export CURL_OVERRIDE=expected
 
           set +e
-          sh lane.d/google-api-docs-sheets-download -t a-token -i an-id -o will/be/created
+          sh lane.d/google-api-docs-sheets-download/run.sh -t a-token -i an-id -o will/be/created
           [ $? -eq 0 ] || exit 1
           [ -d "./will/be" ] || { echo "Output folder was not created"; exit 1; }
 
@@ -199,31 +222,31 @@ jobs:
       - name: Test missing arguments
         run: |
           set +e
-          sh lane.d/google-api-jwt-generate > /dev/null
+          sh lane.d/google-api-jwt-generate/run.sh > /dev/null
           [ $? -eq 2 ] || exit 1
 
       - name: Test missing issuer
         run: |
           set +e
-          sh lane.d/google-api-jwt-generate -s 'scope-a scope-b' -p key.p12 > /dev/null
+          sh lane.d/google-api-jwt-generate/run.sh -s 'scope-a scope-b' -p key.p12 > /dev/null
           [ $? -eq 2 ] || exit 1
 
       - name: Test missing scopes
         run: |
           set +e
-          sh lane.d/google-api-jwt-generate -i an-issuer -p key.p12 > /dev/null
+          sh lane.d/google-api-jwt-generate/run.sh -i an-issuer -p key.p12 > /dev/null
           [ $? -eq 2 ] || exit 1
 
       - name: Test missing p12 file
         run: |
           set +e
-          sh lane.d/google-api-jwt-generate -i an-issuer -s 'scope-a scope-b' > /dev/null
+          sh lane.d/google-api-jwt-generate/run.sh -i an-issuer -s 'scope-a scope-b' > /dev/null
           [ $? -eq 2 ] || exit 1
 
       - name: Test non-existing p12 file
         run: |
           set +e
-          sh lane.d/google-api-jwt-generate -i an-issuer -s 'scope-a scope-b' -p not-a-key.p12 > /dev/null
+          sh lane.d/google-api-jwt-generate/run.sh -i an-issuer -s 'scope-a scope-b' -p not-a-key.p12 > /dev/null
           [ $? -eq 4 ] || exit 1
 
       - name: Test google api curl error
@@ -232,7 +255,7 @@ jobs:
           export CURL_OVERRIDE=fail
 
           set +e
-          sh lane.d/google-api-jwt-generate -i an-issuer -s 'scope-a scope-b' -p key.p12 > result
+          sh lane.d/google-api-jwt-generate/run.sh -i an-issuer -s 'scope-a scope-b' -p key.p12 > result
           [ $? -eq 22 ] || exit 1
 
       - name: Test generating token
@@ -244,7 +267,7 @@ jobs:
           export CURL_OVERRIDE=override
 
           set +e
-          sh lane.d/google-api-jwt-generate -i an-issuer -s 'scope-a scope-b' -p key.p12 > result
+          sh lane.d/google-api-jwt-generate/run.sh -i an-issuer -s 'scope-a scope-b' -p key.p12 > result
           [ $? -eq 0 ] || exit 1
           diff -q expected result > /dev/null || { echo "Unexpected difference:"; diff expected result; exit 1; }
 
@@ -424,22 +447,29 @@ jobs:
     name: Shellcheck
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Make files executable for shellcheck action to check them
-      run: |
-        chmod +x lane
-        find lane.d -name "run.sh" -type f -exec chmod +x {} \;
+      - name: Make files executable for shellcheck action to check them
+        run: |
+          chmod +x lane
+          find lane.d -name "run.sh" -type f -exec chmod +x {} \;
 
-    - name: Run ShellCheck
-      uses: ludeeus/action-shellcheck@master
-      with:
-        scandir: './lane.d'
-        additional_files: 'lane'
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          scandir: "./lane.d"
+          additional_files: "lane"
 
   tests-succeeded:
     name: Tests Succeeded
-    needs: [lane, mobile-static-resources-images, mobile-update-translations, shell-github-action-semver-compare, shellcheck]
+    needs:
+      [
+        lane,
+        mobile-static-resources-images,
+        mobile-update-translations,
+        shell-github-action-semver-compare,
+        shellcheck,
+      ]
     runs-on: ubuntu-latest
     steps:
       - name: All clear

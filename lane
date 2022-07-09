@@ -6,56 +6,63 @@ LANED_PWD=$(realpath "${0}.d")
 trap 'set +x; cd "$OLD_PWD" >/dev/null 2>&1; rm -rf $TMP >/dev/null 2>&1' 0
 trap 'exit 2' 1 2 3 15
 
-_DISPLAY_HELP()
-{
-    echo "$0: <name-of-lane>"
-    echo "Where the name of a lane indicates wich lane you wish to execute"
-}
-
-_DISPLAY_VERSION()
-{
-    echo "Version: ${VERSION:-unreleased}"
-}
-
-_DISPLAY_LANES()
-{
-    echo "The available lanes are:"
-    if [ -d lanes ]; then
-      find lanes -type f -maxdepth 1 | sed 's|^lanes/||g;s|^|  |g'
-    else
-      echo '  No lanes found.'
-    fi
-}
-
 if [ "$1" = "-h" ] || [ "$1" = "--help" ] || [ "$1" = "help" ]; then
-    _DISPLAY_HELP
-    exit 0
+  cat lane.d/help.md
+  exit 0
 fi
 
 if [ "$1" = "-v" ] || [ "$1" = "--version" ] || [ "$1" = "version" ]; then
-    _DISPLAY_VERSION
-    exit 0
+  echo "Version: ${VERSION:-unreleased}"
+  exit 0
 fi
 
 while [ ! -d lanes ] && [ ! "$(pwd)" = '/' ]; do
-    cd ..
+  cd ..
 done
+
+display_lanes() {
+  echo "The available lanes are:"
+  if [ -d lanes ]; then
+    find lanes -type f -mindepth 1 -maxdepth 1 | sed 's|^lanes/||g;s|^|  |g'
+  else
+    echo '  No lanes found.'
+  fi
+}
 
 if [ -z "$1" ]; then
-    _DISPLAY_LANES
-    exit 1
+  display_lanes
+  exit 1
 fi
 
-LANES_PWD=$(pwd)
+builtin_lane="${LANED_PWD}/$1/"
+if [ -d "$builtin_lane" ]; then
+  shift
 
-for TARGET in "${LANED_PWD}/$1/run.sh" "${LANES_PWD}/lanes/$1"; do
-    if [ -f "$TARGET" ]; then
-        shift
-        sh "$TARGET" "$@"
-        exit 0
+  for i in "$@"; do
+    if [ "$i" = "-h" ]; then
+      cat "$builtin_lane/help.md" | grep -v '^```'
+      exit 0
     fi
-done
+  done
 
-echo "Attempt to run unrecognized lane: '${1}'"
-_DISPLAY_LANES
+  export LANE_SIGNAL_LIST_OPTIONS=101
+  set +e
+  sh "$builtin_lane/run.sh" "$@"
+  status=$?
+  if [ $status -eq $LANE_SIGNAL_LIST_OPTIONS ]; then
+    cat "$builtin_lane/options.md"
+    exit 1
+  fi
+  exit $status
+fi
+
+user_lane="./lanes/$1"
+if [ -f "$user_lane" ]; then
+  shift
+  sh "$user_lane" "$@"
+  exit 0
+fi
+
+echo "Unrecognized lane: '${1}'"
+display_lanes
 exit 10
