@@ -50,7 +50,7 @@ if [ -d "$builtin_lane" ]; then
   sh "$builtin_lane/run.sh" "$@"
   status=$?
   if [ $status -eq $LANE_SIGNAL_LIST_OPTIONS ]; then
-    cat "$builtin_lane/options.md"
+    cat "$builtin_lane/options.md" | grep -v '^```'
     exit 1
   fi
   exit $status
