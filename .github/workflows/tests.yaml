@@ -110,6 +110,144 @@ jobs:
           echo 'true' > expected
           diff -q expected result || { echo "Unexpected difference:"; diff expected result; exit 1; }
 
+  google-api-docs-sheets-download:
+    name: Test Google API Docs Sheets Download
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Test missing arguments
+        run: |
+          set +e
+          sh lane.d/google-api-docs-sheets-download > /dev/null
+          [ $? -eq 2 ] || exit 1
+
+      - name: Test missing output file
+        run: |
+          set +e
+          sh lane.d/google-api-docs-sheets-download -t a-token -i an-id > /dev/null
+          [ $? -eq 2 ] || exit 1
+
+      - name: Test missing document id
+        run: |
+          set +e
+          sh lane.d/google-api-docs-sheets-download -t a-token -o result > /dev/null
+          [ $? -eq 2 ] || exit 1
+
+      - name: Test missing token
+        run: |
+          set +e
+          sh lane.d/google-api-docs-sheets-download -i an-id -o result > /dev/null
+          [ $? -eq 2 ] || exit 1
+
+      - name: Test missing curl command
+        run: |
+          export PATH=.github/test-mocks/curl/:$PATH
+          trap 'chmod +x .github/test-mocks/curl/curl' EXIT
+          chmod -x .github/test-mocks/curl/curl
+
+          set +e
+          sh lane.d/google-api-docs-sheets-download -t a-token -i an-id -o result > /dev/null
+          [ $? -eq 3 ] || exit 1
+
+      - name: Test google api curl error
+        run: |
+          export PATH=.github/test-mocks/curl/:$PATH
+          export CURL_OVERRIDE=fail
+
+          set +e
+          sh lane.d/google-api-docs-sheets-download -t a-token -i an-id -o result
+          [ $? -eq 22 ] || exit 1
+
+      - name: Test generated output matches expectation
+        run: |
+          echo 'KEY;UPDATE NEEDED;EN;DA;COMMENT' > expected
+          echo 'SOMETHING;;Something;Noget;' >> expected
+
+          export PATH=.github/test-mocks/curl/:$PATH
+          export CURL_OVERRIDE=expected
+
+          set +e
+          sh lane.d/google-api-docs-sheets-download -t a-token -i an-id -o result
+          [ $? -eq 0 ] || exit 1
+          diff -q expected result > /dev/null || { echo "Unexpected difference:"; diff expected result; exit 1; }
+
+      - name: Test creating output folder
+        run: |
+          echo '' > expected
+
+          export PATH=.github/test-mocks/curl/:$PATH
+          export CURL_OVERRIDE=expected
+
+          set +e
+          sh lane.d/google-api-docs-sheets-download -t a-token -i an-id -o will/be/created
+          [ $? -eq 0 ] || exit 1
+          [ -d "./will/be" ] || { echo "Output folder was not created"; exit 1; }
+
+  google-api-jwt-generate:
+    name: Test Google API JWT Generate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup
+        run: |
+          openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 1 -nodes -subj "/C=US/ST=Void/L=Void/O=Void/CN=www.example.com"
+          openssl pkcs12 -export -passout pass:notasecret -out key.p12 -inkey key.pem -in cert.pem
+          rm *.pem
+
+      - name: Test missing arguments
+        run: |
+          set +e
+          sh lane.d/google-api-jwt-generate > /dev/null
+          [ $? -eq 2 ] || exit 1
+
+      - name: Test missing issuer
+        run: |
+          set +e
+          sh lane.d/google-api-jwt-generate -s 'scope-a scope-b' -p key.p12 > /dev/null
+          [ $? -eq 2 ] || exit 1
+
+      - name: Test missing scopes
+        run: |
+          set +e
+          sh lane.d/google-api-jwt-generate -i an-issuer -p key.p12 > /dev/null
+          [ $? -eq 2 ] || exit 1
+
+      - name: Test missing p12 file
+        run: |
+          set +e
+          sh lane.d/google-api-jwt-generate -i an-issuer -s 'scope-a scope-b' > /dev/null
+          [ $? -eq 2 ] || exit 1
+
+      - name: Test non-existing p12 file
+        run: |
+          set +e
+          sh lane.d/google-api-jwt-generate -i an-issuer -s 'scope-a scope-b' -p not-a-key.p12 > /dev/null
+          [ $? -eq 4 ] || exit 1
+
+      - name: Test google api curl error
+        run: |
+          export PATH=.github/test-mocks/curl/:$PATH
+          export CURL_OVERRIDE=fail
+
+          set +e
+          sh lane.d/google-api-jwt-generate -i an-issuer -s 'scope-a scope-b' -p key.p12 > result
+          [ $? -eq 22 ] || exit 1
+
+      - name: Test generating token
+        run: |
+          echo 'a-secret-token' > expected
+          echo '{"access_token":"a-secret-token"}' > override
+
+          export PATH=.github/test-mocks/curl/:$PATH
+          export CURL_OVERRIDE=override
+
+          set +e
+          sh lane.d/google-api-jwt-generate -i an-issuer -s 'scope-a scope-b' -p key.p12 > result
+          [ $? -eq 0 ] || exit 1
+          diff -q expected result > /dev/null || { echo "Unexpected difference:"; diff expected result; exit 1; }
+
   mobile-static-resources-images:
     name: Test Static Resources Images
     runs-on: ubuntu-latest
