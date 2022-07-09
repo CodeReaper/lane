@@ -159,18 +159,23 @@ jobs:
 
       - name: Test generated output matches expectation
         run: |
+          echo 'KEY;UPDATE NEEDED;EN;DA;COMMENT' > expected
+          echo 'SOMETHING;;Something;Noget;' >> expected
+
           export PATH=.github/test-mocks/curl/:$PATH
-          export CURL_OVERRIDE=.github/test-resources/google-api-docs-sheets-download/file.csv
+          export CURL_OVERRIDE=expected
 
           set +e
           sh lane.d/google-api-docs-sheets-download -t a-token -i an-id -o result
           [ $? -eq 0 ] || exit 1
-          diff -q .github/test-resources/google-api-docs-sheets-download/file.csv result > /dev/null || { echo "Unexpected difference:"; diff .github/test-resources/google-api-docs-sheets-download/file.csv result; exit 1; }
+          diff -q expected result > /dev/null || { echo "Unexpected difference:"; diff expected result; exit 1; }
 
       - name: Test creating output folder
         run: |
+          echo '' > expected
+
           export PATH=.github/test-mocks/curl/:$PATH
-          export CURL_OVERRIDE=.github/test-resources/google-api-docs-sheets-download/file.csv
+          export CURL_OVERRIDE=expected
 
           set +e
           sh lane.d/google-api-docs-sheets-download -t a-token -i an-id -o will/be/created
