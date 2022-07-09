@@ -28,7 +28,7 @@ EXAMPLES
 
 If the contents of `test.yaml` is:
 
-``````yaml
+``````
     name: Tests
 
     on:
