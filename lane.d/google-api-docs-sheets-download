@@ -32,18 +32,16 @@ while getopts "hi:t:f:o:" option; do
 done
 shift $((OPTIND - 1))
 
-if [ -z "$ID" ] || [ -z "$TOKEN" ]; then
-    echo "Must provide both a document id and an authentication key."
+if [ -z "$ID" ] || [ -z "$TOKEN" ] || [ -z "$OUTPUT" ]; then
+    echo "Must provide output path, document id and authentication key."
     _USAGE
-    exit 1
+    exit 2
 fi
 
-for command in curl; do
-  if ! [ -x "$(command -v $command)" ]; then
-    echo "Error: $command is not installed." >&2
-    exit 1
-  fi
-done
+if [ ! -x "$(command -v curl)" ]; then
+  echo "Error: curl is not installed." >&2
+  exit 3
+fi
 
 DIR=$(mktemp -dq)
 
@@ -53,4 +51,6 @@ trap 'exit 2' 1 2 3 15
 url=$(printf 'https://docs.google.com/spreadsheets/d/%s/export?exportFormat=%s' "$ID" "$FORMAT")
 header=$(printf 'Authorization: Bearer %s' "$TOKEN")
 
-curl --silent -L -o "$OUTPUT" --header "$header" "$url"
+OUT=$(dirname "$OUTPUT")
+mkdir -p "$OUT"
+curl --silent --fail -L -o "$OUTPUT" --header "$header" "$url"

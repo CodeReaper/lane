@@ -30,22 +30,22 @@ while getopts "hi:s:p:" option; do
 done
 shift $((OPTIND - 1))
 
-if [ -z "$ISSUER" ] || [ -z "$SCOPES" ]; then
-    echo "Must provide both issuer and scopes."
+if [ -z "$ISSUER" ] || [ -z "$SCOPES" ] || [ -z "$P12" ]; then
+    echo "Must provide issuer, scopes and an p12 file."
     _USAGE
-    exit 1
+    exit 2
 fi
 
 if [ ! -f "$P12" ]; then
     echo "Must provide a p12 file."
     _USAGE
-    exit 1
+    exit 4
 fi
 
 for command in curl base64 openssl jq; do
   if ! [ -x "$(command -v $command)" ]; then
     echo "Error: $command is not installed." >&2
-    exit 1
+    exit 3
   fi
 done
 
@@ -58,6 +58,8 @@ encode() {
   base64 - | tr -d '\n=' | tr '/+' '_-'
 }
 
+iat=$(date +"%s")
+exp=$(date -d +5mins +"%s")
 header='{"alg":"RS256","typ":"JWT"}'
 claim=$(printf '{
   "iss": "%s",
@@ -65,7 +67,7 @@ claim=$(printf '{
   "aud": "https://oauth2.googleapis.com/token",
   "exp": %s,
   "iat": %s
-}' "$ISSUER" "$SCOPES" $(date -d +5mins +"%s") $(date +"%s"))
+}' "$ISSUER" "$SCOPES" "$exp" "$iat")
 header64=$(echo "$header"|encode)
 claim64=$(echo "$claim"|encode)
 
@@ -75,8 +77,8 @@ printf '%s.%s.' "${header64}" "${claim64}" > "$DIR/token"
 openssl pkcs12 -in "$P12" -out "$DIR/privatekey" -nocerts -nodes -passin pass:notasecret
 openssl dgst -sha256 -sign "$DIR/privatekey" -out - "$DIR/request" | encode >> "$DIR/token"
 
-token=$(cat "$DIR/token")
+assertion=$(cat "$DIR/token")
 
-curl --silent -d "grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=$token" https://oauth2.googleapis.com/token | jq -r '.access_token' > "$DIR/token"
-
-cat "$DIR/token"
+set -e
+response=$(curl --silent --fail -d "grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=$assertion" https://oauth2.googleapis.com/token)
+echo "$response" | jq -r '.access_token'
