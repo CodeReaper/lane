@@ -9,8 +9,7 @@ unset -v input
 unset -v key_row
 unset -v main_language
 unset -v output
-separator=,
-while getopts "t:i:c:k:m:o:s:" option; do
+while getopts "t:i:c:k:m:o:" option; do
   case $option in
   t) type=$OPTARG ;;
   i) input=$OPTARG ;;
@@ -18,7 +17,6 @@ while getopts "t:i:c:k:m:o:s:" option; do
   k) key_row=$OPTARG ;;
   m) main_language=$OPTARG ;;
   o) output=$OPTARG ;;
-  s) separator=$OPTARG ;;
   \?) exit 111 ;;
   esac
 done
@@ -55,11 +53,12 @@ makedir() {
   mkdir -p "$parent" 2>/dev/null
 }
 
+# awk too magical
+sed 's/|/\\\\\\/g' <"$input" | awk -vOFS='|' -vq='"' 'func csv2del(n) { for(i=n; i<=c; i++) {if(i%2 == 1) gsub(/,/, OFS, a[i]); else a[i] = (q a[i] q); out = (out) ? out a[i] : a[i]}; return out} {c=split($0, a, q); out=X; if(a[1]) $0=csv2del(1); else $0=csv2del(2)}1' >"${TMP}/input"
+
 while read -r item; do
   offset=$(echo "$item" | cut -d\  -f1 | tr -d "[:blank:]")
-  escape=$(printf 's|\\\\%s|\\\\\\\\\\\\|g' "$separator")
-  unescape=$(printf 's|\\\\\\\\\\\\|%s|g' "$separator")
-  tail +2 "./$input" | grep -v ^$ | sed "$escape" | cut -d "$separator" -f"$key_row,$offset" | sed "$unescape" | sort >"${TMP}/${offset}.csv"
+  tail +2 "${TMP}/input" | grep -v ^$ | cut -d\| -f"$key_row,$offset" | sed 's/\\\\\\/|/g' | sort >"${TMP}/${offset}.csv"
 done <"${TMP}/mapping"
 
 if [ "$type" = "ios" ]; then
@@ -71,8 +70,8 @@ if [ "$type" = "ios" ]; then
 
     printf "" >"$file"
     while read -r line; do
-      key=$(echo "$line" | cut -d "$separator" -f1)
-      value=$(echo "$line" | cut -d "$separator" -f2- | sed 's|\"|\\"|g')
+      key=$(echo "$line" | cut -d\| -f1)
+      value=$(echo "$line" | cut -d\| -f2- | sed 's|^"||;s|"$||;s|\"|\\"|g')
       echo "\"$key\" = \"$value\";" >>"$file"
     done <"${TMP}/${offset}.csv"
 
@@ -85,8 +84,8 @@ if [ "$type" = "ios" ]; then
     echo 'struct Translations {'
 
     while read -r item; do
-      key=$(echo "$item" | cut -d "$separator" -f1)
-      value=$(echo "$item" | cut -d "$separator" -f2-)
+      key=$(echo "$item" | cut -d\| -f1)
+      value=$(echo "$item" | cut -d\| -f2-)
       parameters=$(echo "$value" | grep -o -E '%[0-9]+' | wc -l | tr -d ' \n')
 
       if [ "$parameters" = "0" ]; then
@@ -114,8 +113,8 @@ if [ "$type" = "android" ]; then
 
     echo "<resources>" >"$file"
     while read -r line; do
-      key=$(echo "$line" | cut -d "$separator" -f1 | tr "[:upper:]" "[:lower:]")
-      value=$(echo "$line" | cut -d "$separator" -f2- | sed -E 's|(%[0-9]+)|\1$s|g')
+      key=$(echo "$line" | cut -d\| -f1 | tr "[:upper:]" "[:lower:]")
+      value=$(echo "$line" | cut -d\| -f2- | sed -E 's|(%[0-9]+)|\1$s|g;s|^"||;s|"$||')
       printf "\t<string name=\"%s\">%s</string>\n" "$key" "$value" >>"$file"
     done <"${TMP}/${offset}.csv"
     echo "</resources>" >>"$file"
