@@ -385,6 +385,16 @@ jobs:
           diff -q .github/test-resources/mobile-update-translations/expected-android/result.EN.strings result.EN.strings > /dev/null || { echo "Unexpected difference:"; diff .github/test-resources/mobile-update-translations/expected-android/result.EN.strings result.EN.strings; exit 1; }
           diff -q .github/test-resources/mobile-update-translations/expected-android/result.DA.strings result.DA.strings > /dev/null || { echo "Unexpected difference:"; diff .github/test-resources/mobile-update-translations/expected-android/result.DA.strings result.DA.strings; exit 1; }
 
+      - name: Test separator usage
+        run: |
+          printf 'key;en\nTHIS;works?\n' > input
+          printf '<resources>\n\t<string name="this">works?</string>\n</resources>\n' > expected
+
+          set +e
+          sh lane.d/mobile-update-translations/run.sh -t android -k 1 -c "2 result" -i input -s\;
+          [ $? -eq 0 ] || exit 1
+          diff -q result expected > /dev/null || { echo "Unexpected difference:"; diff result expected; exit 1; }
+
   shell-run-github-workflow-tests:
     name: Test Shell Run Github Workflow Tests (always skipped on GitHub)
     runs-on: ubuntu-latest

@@ -9,7 +9,8 @@ unset -v input
 unset -v key_row
 unset -v main_language
 unset -v output
-while getopts "t:i:c:k:m:o:" option; do
+separator=,
+while getopts "t:i:c:k:m:o:s:" option; do
   case $option in
   t) type=$OPTARG ;;
   i) input=$OPTARG ;;
@@ -17,6 +18,7 @@ while getopts "t:i:c:k:m:o:" option; do
   k) key_row=$OPTARG ;;
   m) main_language=$OPTARG ;;
   o) output=$OPTARG ;;
+  s) separator=$OPTARG ;;
   \?) exit 111 ;;
   esac
 done
@@ -55,7 +57,9 @@ makedir() {
 
 while read -r item; do
   offset=$(echo "$item" | cut -d\  -f1 | tr -d "[:blank:]")
-  tail +2 "./$input" | grep -v ^$ | sed 's|\\;|\\\\\\|g' | cut -d\; -f"$key_row,$offset" | sed 's|\\\\\\|;|g' | sort >"${TMP}/${offset}.csv"
+  escape=$(printf 's|\\\\%s|\\\\\\\\\\\\|g' "$separator")
+  unescape=$(printf 's|\\\\\\\\\\\\|%s|g' "$separator")
+  tail +2 "./$input" | grep -v ^$ | sed "$escape" | cut -d "$separator" -f"$key_row,$offset" | sed "$unescape" | sort >"${TMP}/${offset}.csv"
 done <"${TMP}/mapping"
 
 if [ "$type" = "ios" ]; then
@@ -67,8 +71,8 @@ if [ "$type" = "ios" ]; then
 
     printf "" >"$file"
     while read -r line; do
-      key=$(echo "$line" | cut -d\; -f1)
-      value=$(echo "$line" | cut -d\; -f2- | sed 's|\"|\\"|g')
+      key=$(echo "$line" | cut -d "$separator" -f1)
+      value=$(echo "$line" | cut -d "$separator" -f2- | sed 's|\"|\\"|g')
       echo "\"$key\" = \"$value\";" >>"$file"
     done <"${TMP}/${offset}.csv"
 
@@ -81,8 +85,8 @@ if [ "$type" = "ios" ]; then
     echo 'struct Translations {'
 
     while read -r item; do
-      key=$(echo "$item" | cut -d\; -f1)
-      value=$(echo "$item" | cut -d\; -f2-)
+      key=$(echo "$item" | cut -d "$separator" -f1)
+      value=$(echo "$item" | cut -d "$separator" -f2-)
       parameters=$(echo "$value" | grep -o -E '%[0-9]+' | wc -l | tr -d ' \n')
 
       if [ "$parameters" = "0" ]; then
@@ -110,8 +114,8 @@ if [ "$type" = "android" ]; then
 
     echo "<resources>" >"$file"
     while read -r line; do
-      key=$(echo "$line" | cut -d\; -f1 | tr "[:upper:]" "[:lower:]")
-      value=$(echo "$line" | cut -d\; -f2- | sed -E 's|(%[0-9]+)|\1$s|g')
+      key=$(echo "$line" | cut -d "$separator" -f1 | tr "[:upper:]" "[:lower:]")
+      value=$(echo "$line" | cut -d "$separator" -f2- | sed -E 's|(%[0-9]+)|\1$s|g')
       printf "\t<string name=\"%s\">%s</string>\n" "$key" "$value" >>"$file"
     done <"${TMP}/${offset}.csv"
     echo "</resources>" >>"$file"
