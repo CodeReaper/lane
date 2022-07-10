@@ -1,61 +1,39 @@
 #!/bin/sh
 
-trap 'set +x; 2>&1' 0
-trap 'exit 2' 1 2 3 15
-
-_USAGE() {
-cat << END
-OPTIONS
-    -h show this usage
-    -i input directory
-    -o output file
-END
-}
-
-unset -v INPUT
-unset -v OUTPUT
-while getopts "hi:o:" option; do
-    case $option in
-        i) INPUT=$OPTARG ;;
-        o) OUTPUT=$OPTARG ;;
-        \?)
-          echo "unknown option: $option"
-          _USAGE
-          exit 1
-          ;;
-        h)
-          _USAGE
-          exit 0
-          ;;
-    esac
+unset -v input
+unset -v output
+while getopts "i:o:" option; do
+  case $option in
+  i) input=$OPTARG ;;
+  o) output=$OPTARG ;;
+  \?) exit 111 ;;
+  esac
 done
 shift $((OPTIND - 1))
 
-if [ -z "$INPUT" ] || [ -z "$OUTPUT" ]; then
-    printf 'Provide both input and output arguments.\n\n'
-    _USAGE
-    exit 2
+if [ -z "$input" ] || [ -z "$output" ]; then
+  printf 'Provide both input and output arguments.\n\n'
+  exit 111
 fi
 
-if [ ! -d "$INPUT" ]; then
-    printf 'Provide a valid input directory.\n\n'
-    _USAGE
-    exit 3
+if [ ! -d "$input" ]; then
+  printf 'Provide a valid input directory.\n\n'
+  exit 3
 fi
 
-OUTPUT_DIRECTORY=$(dirname "$OUTPUT")
-mkdir -p "$OUTPUT_DIRECTORY" 2>/dev/null
+parent=$(dirname "$output")
+mkdir -p "$parent" 2>/dev/null
 
 {
-    echo '// swiftlint:disable all'
-    echo 'import UIKit'
-    echo 'struct Images {'
+  echo '// swiftlint:disable all'
+  echo 'import UIKit'
+  echo 'struct Images {'
 
-    find "$INPUT" -type d -iname "*.imageset" | while read -r ITEM; do
-      NAME=$(basename "$ITEM" .imageset)
-      SAFE_NAME=$(echo "$NAME" | sed 's/-/_/g;s/ /_/g')
-      printf "\tstatic let %s = UIImage(named:\"%s\")!\n" "$SAFE_NAME" "$NAME"
-    done
+  find "$input" -type d -iname "*.imageset" | while read -r item; do
+    name=$(basename "$item" .imageset)
+    safe_name=$(echo "$name" | sed 's/-/_/g;s/ /_/g')
+    printf "\tstatic let %s = UIImage(named:\"%s\")!\n" "$safe_name" "$name"
+  done
 
-    echo '}'
-} > "$OUTPUT"
+  echo '}'
+} >"$output"

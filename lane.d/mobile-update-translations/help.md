@@ -74,14 +74,14 @@ The output using `-t ios -i input.csv -c '3 en.strings' -k 1 -m 3 -o translation
 
 en.strings:
 
-```
+```ini
     "SOMETHING" = "Something";
     "SOMETHING_WITH_ARGUMENTS" = "Something with %1 and %2";
 ```
 
 translations.swift:
 
-```
+```swift
     // swiftlint:disable all
     import Foundation
     struct Translations {

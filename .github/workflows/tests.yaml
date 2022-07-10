@@ -143,25 +143,25 @@ jobs:
         run: |
           set +e
           sh lane.d/google-api-docs-sheets-download/run.sh > /dev/null
-          [ $? -eq 2 ] || exit 1
+          [ $? -eq 111 ] || exit 1
 
       - name: Test missing output file
         run: |
           set +e
           sh lane.d/google-api-docs-sheets-download/run.sh -t a-token -i an-id > /dev/null
-          [ $? -eq 2 ] || exit 1
+          [ $? -eq 111 ] || exit 1
 
       - name: Test missing document id
         run: |
           set +e
           sh lane.d/google-api-docs-sheets-download/run.sh -t a-token -o result > /dev/null
-          [ $? -eq 2 ] || exit 1
+          [ $? -eq 111 ] || exit 1
 
       - name: Test missing token
         run: |
           set +e
           sh lane.d/google-api-docs-sheets-download/run.sh -i an-id -o result > /dev/null
-          [ $? -eq 2 ] || exit 1
+          [ $? -eq 111 ] || exit 1
 
       - name: Test missing curl command
         run: |
@@ -223,25 +223,25 @@ jobs:
         run: |
           set +e
           sh lane.d/google-api-jwt-generate/run.sh > /dev/null
-          [ $? -eq 2 ] || exit 1
+          [ $? -eq 111 ] || exit 1
 
       - name: Test missing issuer
         run: |
           set +e
           sh lane.d/google-api-jwt-generate/run.sh -s 'scope-a scope-b' -p key.p12 > /dev/null
-          [ $? -eq 2 ] || exit 1
+          [ $? -eq 111 ] || exit 1
 
       - name: Test missing scopes
         run: |
           set +e
           sh lane.d/google-api-jwt-generate/run.sh -i an-issuer -p key.p12 > /dev/null
-          [ $? -eq 2 ] || exit 1
+          [ $? -eq 111 ] || exit 1
 
       - name: Test missing p12 file
         run: |
           set +e
           sh lane.d/google-api-jwt-generate/run.sh -i an-issuer -s 'scope-a scope-b' > /dev/null
-          [ $? -eq 2 ] || exit 1
+          [ $? -eq 111 ] || exit 1
 
       - name: Test non-existing p12 file
         run: |
@@ -285,19 +285,19 @@ jobs:
         run: |
           set +e
           sh lane.d/mobile-static-resources-images/run.sh > /dev/null
-          [ $? -eq 2 ] || exit 1
+          [ $? -eq 111 ] || exit 1
 
       - name: Test missing input file
         run: |
           set +e
           sh lane.d/mobile-static-resources-images/run.sh -o result > /dev/null
-          [ $? -eq 2 ] || exit 1
+          [ $? -eq 111 ] || exit 1
 
       - name: Test missing output file
         run: |
           set +e
           sh lane.d/mobile-static-resources-images/run.sh -i input > /dev/null
-          [ $? -eq 2 ] || exit 1
+          [ $? -eq 111 ] || exit 1
 
       - name: Test non-existing input folder
         run: |

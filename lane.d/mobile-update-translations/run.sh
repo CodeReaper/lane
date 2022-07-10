@@ -4,132 +4,117 @@ TMP=$(mktemp -dq)
 trap 'set +x; rm -rf $TMP 2>/dev/null 2>&1' 0
 trap 'exit 2' 1 2 3 15
 
-unset -v TYPE
-unset -v INPUT
-unset -v KEY_ROW
-unset -v MAIN_LANGUAGE
-unset -v OUTPUT
-unset -v BETTER
+unset -v type
+unset -v input
+unset -v key_row
+unset -v main_language
+unset -v output
 while getopts "t:i:c:k:m:o:" option; do
   case $option in
+  t) type=$OPTARG ;;
+  i) input=$OPTARG ;;
   c) echo "$OPTARG" >>"$TMP/mapping" ;;
-  t) TYPE=$OPTARG ;;
-  i) INPUT=$OPTARG ;;
-  k) KEY_ROW=$OPTARG ;;
-  m) MAIN_LANGUAGE=$OPTARG ;;
-  o) OUTPUT=$OPTARG ;;
+  k) key_row=$OPTARG ;;
+  m) main_language=$OPTARG ;;
+  o) output=$OPTARG ;;
   \?) exit 111 ;;
   esac
 done
 shift $((OPTIND - 1))
 
-if [ ! "$TYPE" = "ios" ] && [ ! "$TYPE" = "android" ]; then
+if [ ! "$type" = "ios" ] && [ ! "$type" = "android" ]; then
   printf 'Provide ios or android as type.\n\n'
   exit 111
 fi
 
-if [ "$TYPE" = "ios" ]; then
-  if [ -z "$MAIN_LANGUAGE" ]; then
+if [ "$type" = "ios" ]; then
+  if [ -z "$main_language" ]; then
     printf 'Provide main language.\n\n'
     exit 111
   fi
-  if [ -z "$OUTPUT" ]; then
+  if [ -z "$output" ]; then
     printf 'Provide output file.\n\n'
     exit 111
   fi
 fi
 
-if [ ! -f "$INPUT" ]; then
+if [ ! -f "$input" ]; then
   printf 'Provide input file.\n\n'
   exit 111
 fi
 
-if [ -z "$KEY_ROW" ]; then
+if [ -z "$key_row" ]; then
   printf 'Provide key row.\n\n'
   exit 111
 fi
 
-_MKDIR() {
-  DIRECTORY=$(dirname "$1")
-  mkdir -p "$DIRECTORY" 2>/dev/null
+makedir() {
+  parent=$(dirname "$1")
+  mkdir -p "$parent" 2>/dev/null
 }
 
-_UNPACK_CSV() {
-  while read -r ITEM; do
-    OFFSET=$(echo "$ITEM" | cut -d\  -f1 | tr -d "[:blank:]")
-    tail +2 "./$INPUT" | grep -v ^$ | sed 's|\\;|\\\\\\|g' | cut -d\; -f"$KEY_ROW,$OFFSET" | sed 's|\\\\\\|;|g' | sort >"${TMP}/${OFFSET}.csv"
-  done <"${TMP}/mapping"
-}
+while read -r item; do
+  offset=$(echo "$item" | cut -d\  -f1 | tr -d "[:blank:]")
+  tail +2 "./$input" | grep -v ^$ | sed 's|\\;|\\\\\\|g' | cut -d\; -f"$key_row,$offset" | sed 's|\\\\\\|;|g' | sort >"${TMP}/${offset}.csv"
+done <"${TMP}/mapping"
 
-_GENERATE_XML() {
-  while read -r ITEM; do
-    OFFSET=$(echo "$ITEM" | cut -d\  -f1 | tr -d "[:blank:]")
-    FILE=$(echo "$ITEM" | cut -d\  -f2- | tr -d "[:blank:]")
+if [ "$type" = "ios" ]; then
+  while read -r item; do
+    offset=$(echo "$item" | cut -d\  -f1 | tr -d "[:blank:]")
+    file=$(echo "$item" | cut -d\  -f2- | tr -d "[:blank:]")
 
-    _MKDIR "$FILE"
+    makedir "$file"
 
-    echo "<resources>" >"$FILE"
-    while read -r LINE; do
-      KEY=$(echo "$LINE" | cut -d\; -f1 | tr "[:upper:]" "[:lower:]")
-      VALUE=$(echo "$LINE" | cut -d\; -f2- | sed -E 's|(%[0-9]+)|\1$s|g')
-      printf "\t<string name=\"%s\">%s</string>\n" "$KEY" "$VALUE" >>"$FILE"
-    done <"${TMP}/${OFFSET}.csv"
-    echo "</resources>" >>"$FILE"
+    printf "" >"$file"
+    while read -r line; do
+      key=$(echo "$line" | cut -d\; -f1)
+      value=$(echo "$line" | cut -d\; -f2- | sed 's|\"|\\"|g')
+      echo "\"$key\" = \"$value\";" >>"$file"
+    done <"${TMP}/${offset}.csv"
 
   done <"${TMP}/mapping"
-}
 
-_GENERATE_STRINGS() {
-  while read -r ITEM; do
-    OFFSET=$(echo "$ITEM" | cut -d\  -f1 | tr -d "[:blank:]")
-    FILE=$(echo "$ITEM" | cut -d\  -f2- | tr -d "[:blank:]")
+  makedir "$output"
+  {
+    echo '// swiftlint:disable all'
+    echo 'import Foundation'
+    echo 'struct Translations {'
 
-    _MKDIR "$FILE"
+    while read -r item; do
+      key=$(echo "$item" | cut -d\; -f1)
+      value=$(echo "$item" | cut -d\; -f2-)
+      parameters=$(echo "$value" | grep -o -E '%[0-9]+' | wc -l | tr -d ' \n')
 
-    printf "" >"$FILE"
-    while read -r LINE; do
-      KEY=$(echo "$LINE" | cut -d\; -f1)
-      VALUE=$(echo "$LINE" | cut -d\; -f2- | sed 's|\"|\\"|g')
-      echo "\"$KEY\" = \"$VALUE\";" >>"$FILE"
-    done <"${TMP}/${OFFSET}.csv"
+      if [ "$parameters" = "0" ]; then
+        printf "\tstatic let %s = NSLocalizedString(\"%s\", comment: \"\")\n" "$key" "$key"
+      else
+        arguments=$(for i in $(seq 1 "$parameters"); do printf "p%s: String, _ " "$i"; done | rev | cut -c5- | rev)
+        replacements=$(for i in $(seq 1 "$parameters"); do printf ".replacingOccurrences(of: \"%%%s\", with: p%s)" "$i" "$i"; done)
+        printf "\tstatic func %s(_ %s) -> String {" "$key" "$arguments"
+        printf " return NSLocalizedString(\"%s\", comment: \"\")" "$key"
+        printf "%s" "$replacements"
+        echo " }"
+      fi
+    done <"${TMP}/${main_language}.csv"
 
-  done <"${TMP}/mapping"
-}
-
-_GENERATE_STRUCT() {
-  echo '// swiftlint:disable all'
-  echo 'import Foundation'
-  echo 'struct Translations {'
-
-  while read -r ITEM; do
-    KEY=$(echo "$ITEM" | cut -d\; -f1)
-    VALUE=$(echo "$ITEM" | cut -d\; -f2-)
-    PARAMETERS=$(echo "$VALUE" | grep -o -E '%[0-9]+' | wc -l | tr -d ' \n')
-
-    if [ "$PARAMETERS" = "0" ]; then
-      printf "\tstatic let %s = NSLocalizedString(\"%s\", comment: \"\")\n" "$KEY" "$KEY"
-    else
-      ARGUMENTS=$(for i in $(seq 1 "$PARAMETERS"); do printf "p%s: String, _ " "$i"; done | rev | cut -c5- | rev)
-      REPLACEMENTS=$(for i in $(seq 1 "$PARAMETERS"); do printf ".replacingOccurrences(of: \"%%%s\", with: p%s)" "$i" "$i"; done)
-      printf "\tstatic func %s(_ %s) -> String {" "$KEY" "$ARGUMENTS"
-      printf " return NSLocalizedString(\"%s\", comment: \"\")" "$KEY"
-      printf "%s" "$REPLACEMENTS"
-      echo " }"
-    fi
-  done <"${TMP}/${MAIN_LANGUAGE}.csv"
-
-  echo '}'
-}
-
-_UNPACK_CSV
-
-if [ "$TYPE" = "ios" ]; then
-  _GENERATE_STRINGS
-
-  _MKDIR "$OUTPUT"
-  _GENERATE_STRUCT >"$OUTPUT"
+    echo '}'
+  } >"$output"
 fi
 
-if [ "$TYPE" = "android" ]; then
-  _GENERATE_XML
+if [ "$type" = "android" ]; then
+  while read -r item; do
+    offset=$(echo "$item" | cut -d\  -f1 | tr -d "[:blank:]")
+    file=$(echo "$item" | cut -d\  -f2- | tr -d "[:blank:]")
+
+    makedir "$file"
+
+    echo "<resources>" >"$file"
+    while read -r line; do
+      key=$(echo "$line" | cut -d\; -f1 | tr "[:upper:]" "[:lower:]")
+      value=$(echo "$line" | cut -d\; -f2- | sed -E 's|(%[0-9]+)|\1$s|g')
+      printf "\t<string name=\"%s\">%s</string>\n" "$key" "$value" >>"$file"
+    done <"${TMP}/${offset}.csv"
+    echo "</resources>" >>"$file"
+
+  done <"${TMP}/mapping"
 fi
