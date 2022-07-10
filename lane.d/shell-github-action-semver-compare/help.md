@@ -6,7 +6,7 @@ NAME
 
 SYNOPSIS
 ```
-    -m main-version -c current-version
+    -m main-version -c current-version [-q]
     -h
 ```
 
@@ -29,6 +29,9 @@ OPTIONS
 
     -c
         The current version
+
+    -q
+        Quiet mode will not output debugging messages
 ```
 
 EXIT CODES

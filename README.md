@@ -20,3 +20,11 @@
 
 - [lane shell-github-action-semver-compare](lane.d/shell-github-action-semver-compare/help.md)
 - [lane shell-run-github-workflow-tests](lane.d/shell-run-github-workflow-tests/help.md)
+
+## Goals
+
+- Add autocomplete for:
+- - user lanes
+- - builtin lanes
+- Add help for version check and installation
+- Ensure test job `tests-succeeded` needs "all"

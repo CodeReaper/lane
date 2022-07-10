@@ -7,21 +7,21 @@ for command in git yq jq; do
   fi
 done
 
-unset -v FILE
-unset -v JOBID
+unset -v file
+unset -v jobid
 while getopts "i:j:" option; do
   case $option in
-  i) FILE="$OPTARG" ;;
-  j) JOBID="$OPTARG" ;;
+  i) file="$OPTARG" ;;
+  j) jobid="$OPTARG" ;;
   \?) exit 111 ;;
   esac
 done
 shift $((OPTIND - 1))
 
-if [ ! -f "$FILE" ]; then
+if [ ! -f "$file" ]; then
   echo "Must provide a valid path to a GitHub workflow file with script-based tests."
-  if [ -n "$FILE" ]; then
-    printf "Given: %s\n\n" "$FILE"
+  if [ -n "$file" ]; then
+    printf "Given: %s\n\n" "$file"
   else
     echo
   fi
@@ -39,45 +39,45 @@ printf 'Preparing runnner...'
 
 echo 'TOTAL_PASS=0; TOTAL_FAIL=0' >"$DIR/runner.sh"
 
-yq -o json "$FILE" | jq -rc '.jobs | to_entries[] | [{group: .key, groupName: .value.name, script: .value.steps}] | .[]' | while read -r JOB; do
-  GROUP=$(printf '%s\n' "$JOB" | jq -rj '.group')
-  GROUP_NAME=$(printf '%s\n' "$JOB" | jq -rj '.groupName')
+yq -o json "$file" | jq -rc '.jobs | to_entries[] | [{group: .key, groupName: .value.name, script: .value.steps}] | .[]' | while read -r job; do
+  group=$(printf '%s\n' "$job" | jq -rj '.group')
+  group_name=$(printf '%s\n' "$job" | jq -rj '.groupName')
 
   {
-    echo "cd '${DIR}/workspace/'; git reset HEAD --hard > /dev/null; git clean -fdx . > /dev/null; sh '${DIR}/${GROUP}.sh'"
+    echo "cd '${DIR}/workspace/'; git reset HEAD --hard > /dev/null; git clean -fdx . > /dev/null; sh '${DIR}/${group}.sh'"
     echo "TOTAL_PASS=\$((TOTAL_PASS+\$(cat ${DIR}/PASS))); TOTAL_FAIL=\$((TOTAL_FAIL+\$(cat ${DIR}/FAIL)))"
   } >>"$DIR/runner.sh"
 
   {
-    echo "echo; echo '$GROUP_NAME ($GROUP)'"
+    echo "echo; echo '$group_name ($group)'"
     echo "GREEN=$'\e[0;32m'; RED=$'\e[0;31m'; NC=$'\e[0m'; PASS=0; FAIL=0"
-  } >"${DIR}/${GROUP}.sh"
+  } >"${DIR}/${group}.sh"
 
-  if [ -n "$JOBID" ] && [ ! "$JOBID" = "$GROUP" ]; then
+  if [ -n "$jobid" ] && [ ! "$jobid" = "$group" ]; then
     {
       echo "echo ' - Skipped'"
       echo "printf 0 > '${DIR}/PASS'; printf 0 > '${DIR}/FAIL'"
-    } >>"${DIR}/${GROUP}.sh"
+    } >>"${DIR}/${group}.sh"
     continue
   fi
 
   I=0
-  printf '%s\n' "$JOB" | jq -rc '.script[] | select(.run != null)' | while read -r STEP; do
-    STEP_NAME=$(printf '%s\n' "$STEP" | jq -rj '.name')
-    RUN=$(printf '%s\n' "$STEP" | jq -rj '.run')
+  printf '%s\n' "$job" | jq -rc '.script[] | select(.run != null)' | while read -r step; do
+    step_name=$(printf '%s\n' "$step" | jq -rj '.name')
+    run=$(printf '%s\n' "$step" | jq -rj '.run')
 
-    echo "$RUN" >"${DIR}/${GROUP}.${I}.sh"
+    echo "$run" >"${DIR}/${group}.${I}.sh"
 
     {
-      echo "printf ' - ${STEP_NAME}: '"
-      echo "set +e; sh '${DIR}/${GROUP}.${I}.sh' > messages 2>&1"
+      echo "printf ' - ${step_name}: '"
+      echo "set +e; sh '${DIR}/${group}.${I}.sh' > messages 2>&1"
       printf "if [ \$? -eq 0 ]; then printf \${GREEN}'Pass\n'\${NC}; PASS=\$((PASS+1)); else printf \${RED}'Fail\n'\${NC}; FAIL=\$((FAIL+1)); cat messages; fi;\n"
-    } >>"${DIR}/${GROUP}.sh"
+    } >>"${DIR}/${group}.sh"
 
     I=$((I + 1))
   done
 
-  echo "printf \$PASS > '${DIR}/PASS'; printf \$FAIL > '${DIR}/FAIL'" >>"${DIR}/${GROUP}.sh"
+  echo "printf \$PASS > '${DIR}/PASS'; printf \$FAIL > '${DIR}/FAIL'" >>"${DIR}/${group}.sh"
 
 done
 
