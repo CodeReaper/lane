@@ -1,4 +1,3 @@
-
 name: Tests
 
 on:
@@ -86,8 +85,8 @@ jobs:
       - name: Test builtin lane
         run: |
           rm -rf lanes
-          mkdir lanes
-          echo 'echo hi' > lane.d/say-hi
+          mkdir lane.d/say-hi
+          echo 'echo hi' > lane.d/say-hi/run.sh
 
           set +e
           sh ./lane say-hi > result
@@ -99,14 +98,40 @@ jobs:
         run: |
           rm -rf lanes
           mkdir lanes
-          echo 'echo false' > lanes/say
-          echo 'echo true' > lane.d/say
+          mkdir lanes/say
+          mkdir lane.d/say
+          echo 'echo false' > lanes/say/run.sh
+          echo 'echo true' > lane.d/say/run.sh
 
           set +e
           sh ./lane say > result
           [ $? -eq 0 ] || exit 1
           echo 'true' > expected
           diff -q expected result || { echo "Unexpected difference:"; diff expected result; exit 1; }
+
+  lane-d-requirements:
+    name: Test lane.d Requirements
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Validate builtins has an entry point
+        run: |
+          find lane.d -mindepth 1 -maxdepth 1 -type d -exec sh -c 'test -f "$1/run.sh" || echo "$1"' -- {} \; > missing
+          count=$(wc -l missing | cut -d\  -f1)
+          [ $count -eq 0 ] || { cat missing; exit 1; }
+
+      - name: Validate builtins has options descriptions
+        run: |
+          find lane.d -mindepth 1 -maxdepth 1 -type d -exec sh -c 'test -f "$1/options.md" || echo "$1"' -- {} \; > missing
+          count=$(wc -l missing | cut -d\  -f1)
+          [ $count -eq 0 ] || { cat missing; exit 1; }
+
+      - name: Validate builtins has help available
+        run: |
+          find lane.d -mindepth 1 -maxdepth 1 -type d -exec sh -c 'test -f "$1/help.md" || echo "$1"' -- {} \; > missing
+          count=$(wc -l missing | cut -d\  -f1)
+          [ $count -eq 0 ] || { cat missing; exit 1; }
 
   google-api-docs-sheets-download:
     name: Test Google API Docs Sheets Download
@@ -117,26 +142,26 @@ jobs:
       - name: Test missing arguments
         run: |
           set +e
-          sh lane.d/google-api-docs-sheets-download > /dev/null
-          [ $? -eq 2 ] || exit 1
+          sh lane.d/google-api-docs-sheets-download/run.sh > /dev/null
+          [ $? -eq 111 ] || exit 1
 
       - name: Test missing output file
         run: |
           set +e
-          sh lane.d/google-api-docs-sheets-download -t a-token -i an-id > /dev/null
-          [ $? -eq 2 ] || exit 1
+          sh lane.d/google-api-docs-sheets-download/run.sh -t a-token -i an-id > /dev/null
+          [ $? -eq 111 ] || exit 1
 
       - name: Test missing document id
         run: |
           set +e
-          sh lane.d/google-api-docs-sheets-download -t a-token -o result > /dev/null
-          [ $? -eq 2 ] || exit 1
+          sh lane.d/google-api-docs-sheets-download/run.sh -t a-token -o result > /dev/null
+          [ $? -eq 111 ] || exit 1
 
       - name: Test missing token
         run: |
           set +e
-          sh lane.d/google-api-docs-sheets-download -i an-id -o result > /dev/null
-          [ $? -eq 2 ] || exit 1
+          sh lane.d/google-api-docs-sheets-download/run.sh -i an-id -o result > /dev/null
+          [ $? -eq 111 ] || exit 1
 
       - name: Test missing curl command
         run: |
@@ -145,7 +170,7 @@ jobs:
           chmod -x .github/test-mocks/curl/curl
 
           set +e
-          sh lane.d/google-api-docs-sheets-download -t a-token -i an-id -o result > /dev/null
+          sh lane.d/google-api-docs-sheets-download/run.sh -t a-token -i an-id -o result > /dev/null
           [ $? -eq 3 ] || exit 1
 
       - name: Test google api curl error
@@ -154,7 +179,7 @@ jobs:
           export CURL_OVERRIDE=fail
 
           set +e
-          sh lane.d/google-api-docs-sheets-download -t a-token -i an-id -o result
+          sh lane.d/google-api-docs-sheets-download/run.sh -t a-token -i an-id -o result
           [ $? -eq 22 ] || exit 1
 
       - name: Test generated output matches expectation
@@ -166,7 +191,7 @@ jobs:
           export CURL_OVERRIDE=expected
 
           set +e
-          sh lane.d/google-api-docs-sheets-download -t a-token -i an-id -o result
+          sh lane.d/google-api-docs-sheets-download/run.sh -t a-token -i an-id -o result
           [ $? -eq 0 ] || exit 1
           diff -q expected result > /dev/null || { echo "Unexpected difference:"; diff expected result; exit 1; }
 
@@ -178,7 +203,7 @@ jobs:
           export CURL_OVERRIDE=expected
 
           set +e
-          sh lane.d/google-api-docs-sheets-download -t a-token -i an-id -o will/be/created
+          sh lane.d/google-api-docs-sheets-download/run.sh -t a-token -i an-id -o will/be/created
           [ $? -eq 0 ] || exit 1
           [ -d "./will/be" ] || { echo "Output folder was not created"; exit 1; }
 
@@ -197,31 +222,31 @@ jobs:
       - name: Test missing arguments
         run: |
           set +e
-          sh lane.d/google-api-jwt-generate > /dev/null
-          [ $? -eq 2 ] || exit 1
+          sh lane.d/google-api-jwt-generate/run.sh > /dev/null
+          [ $? -eq 111 ] || exit 1
 
       - name: Test missing issuer
         run: |
           set +e
-          sh lane.d/google-api-jwt-generate -s 'scope-a scope-b' -p key.p12 > /dev/null
-          [ $? -eq 2 ] || exit 1
+          sh lane.d/google-api-jwt-generate/run.sh -s 'scope-a scope-b' -p key.p12 > /dev/null
+          [ $? -eq 111 ] || exit 1
 
       - name: Test missing scopes
         run: |
           set +e
-          sh lane.d/google-api-jwt-generate -i an-issuer -p key.p12 > /dev/null
-          [ $? -eq 2 ] || exit 1
+          sh lane.d/google-api-jwt-generate/run.sh -i an-issuer -p key.p12 > /dev/null
+          [ $? -eq 111 ] || exit 1
 
       - name: Test missing p12 file
         run: |
           set +e
-          sh lane.d/google-api-jwt-generate -i an-issuer -s 'scope-a scope-b' > /dev/null
-          [ $? -eq 2 ] || exit 1
+          sh lane.d/google-api-jwt-generate/run.sh -i an-issuer -s 'scope-a scope-b' > /dev/null
+          [ $? -eq 111 ] || exit 1
 
       - name: Test non-existing p12 file
         run: |
           set +e
-          sh lane.d/google-api-jwt-generate -i an-issuer -s 'scope-a scope-b' -p not-a-key.p12 > /dev/null
+          sh lane.d/google-api-jwt-generate/run.sh -i an-issuer -s 'scope-a scope-b' -p not-a-key.p12 > /dev/null
           [ $? -eq 4 ] || exit 1
 
       - name: Test google api curl error
@@ -230,7 +255,7 @@ jobs:
           export CURL_OVERRIDE=fail
 
           set +e
-          sh lane.d/google-api-jwt-generate -i an-issuer -s 'scope-a scope-b' -p key.p12 > result
+          sh lane.d/google-api-jwt-generate/run.sh -i an-issuer -s 'scope-a scope-b' -p key.p12 > result
           [ $? -eq 22 ] || exit 1
 
       - name: Test generating token
@@ -242,7 +267,7 @@ jobs:
           export CURL_OVERRIDE=override
 
           set +e
-          sh lane.d/google-api-jwt-generate -i an-issuer -s 'scope-a scope-b' -p key.p12 > result
+          sh lane.d/google-api-jwt-generate/run.sh -i an-issuer -s 'scope-a scope-b' -p key.p12 > result
           [ $? -eq 0 ] || exit 1
           diff -q expected result > /dev/null || { echo "Unexpected difference:"; diff expected result; exit 1; }
 
@@ -259,45 +284,45 @@ jobs:
       - name: Test missing arguments
         run: |
           set +e
-          sh lane.d/mobile-static-resources-images > /dev/null
-          [ $? -eq 2 ] || exit 1
+          sh lane.d/mobile-static-resources-images/run.sh > /dev/null
+          [ $? -eq 111 ] || exit 1
 
       - name: Test missing input file
         run: |
           set +e
-          sh lane.d/mobile-static-resources-images -o result > /dev/null
-          [ $? -eq 2 ] || exit 1
+          sh lane.d/mobile-static-resources-images/run.sh -o result > /dev/null
+          [ $? -eq 111 ] || exit 1
 
       - name: Test missing output file
         run: |
           set +e
-          sh lane.d/mobile-static-resources-images -i input > /dev/null
-          [ $? -eq 2 ] || exit 1
+          sh lane.d/mobile-static-resources-images/run.sh -i input > /dev/null
+          [ $? -eq 111 ] || exit 1
 
       - name: Test non-existing input folder
         run: |
           set +e
-          sh lane.d/mobile-static-resources-images -i ./non-existing-folder -o result > /dev/null
+          sh lane.d/mobile-static-resources-images/run.sh -i ./non-existing-folder -o result > /dev/null
           [ $? -eq 3 ] || exit 1
 
       - name: Test empty asset folder
         run: |
           set +e
-          sh lane.d/mobile-static-resources-images -i empty-folder -o result
+          sh lane.d/mobile-static-resources-images/run.sh -i empty-folder -o result
           [ $? -eq 0 ] || exit 1
           diff -q .github/test-resources/mobile-static-resources-images/empty.swift result > /dev/null || { echo "Unexpected difference:"; diff .github/test-resources/mobile-static-resources-images/empty.swift result; exit 1; }
 
       - name: Test with asset folder
         run: |
           set +e
-          sh lane.d/mobile-static-resources-images -i .github/test-resources/mobile-static-resources-images/assets -o result
+          sh lane.d/mobile-static-resources-images/run.sh -i .github/test-resources/mobile-static-resources-images/assets -o result
           [ $? -eq 0 ] || exit 1
           diff -q .github/test-resources/mobile-static-resources-images/assets.swift result > /dev/null || { echo "Unexpected difference:"; diff .github/test-resources/mobile-static-resources-images/assets.swift result; exit 1; }
 
       - name: Test creating output folder
         run: |
           set +e
-          sh lane.d/mobile-static-resources-images -i empty-folder -o will/be/created
+          sh lane.d/mobile-static-resources-images/run.sh -i empty-folder -o will/be/created
           [ $? -eq 0 ] || exit 1
           [ -d "./will/be" ] || { echo "Output folder was not created"; exit 1; }
 
@@ -310,43 +335,43 @@ jobs:
       - name: Test missing argument
         run: |
           set +e
-          sh lane.d/mobile-update-translations > /dev/null
-          [ $? -eq 2 ] || exit 1
+          sh lane.d/mobile-update-translations/run.sh > /dev/null
+          [ $? -eq 111 ] || exit 1
 
       - name: Test missing configuration for missing input
         run: |
           set +e
-          sh lane.d/mobile-update-translations -t ios -k 1 -m EN -o result.swift -c "4 DA result.DA.strings" -c "3 EN result.EN.strings"
-          [ $? -eq 2 ] || exit 1
+          sh lane.d/mobile-update-translations/run.sh -t ios -k 1 -m 3 -o result.swift -c "4 result.DA.strings" -c "3 result.EN.strings"
+          [ $? -eq 111 ] || exit 1
 
       - name: Test missing configuration for input not a file
         run: |
           set +e
-          sh lane.d/mobile-update-translations -t ios -k 1 -m EN -o result.swift -c "4 DA result.DA.strings" -c "3 EN result.EN.strings" -i .github/test-resources/
-          [ $? -eq 2 ] || exit 1
+          sh lane.d/mobile-update-translations/run.sh -t ios -k 1 -m 3 -o result.swift -c "4 result.DA.strings" -c "3 result.EN.strings" -i .github/test-resources/
+          [ $? -eq 111 ] || exit 1
 
       - name: Test missing configuration for missing main language
         run: |
           set +e
-          sh lane.d/mobile-update-translations -t ios -k 1 -o result.swift -c "4 DA result.DA.strings" -c "3 EN result.EN.strings" -i .github/test-resources/mobile-update-translations/configuration/input.csv
-          [ $? -eq 2 ] || exit 1
+          sh lane.d/mobile-update-translations/run.sh -t ios -k 1 -o result.swift -c "4 result.DA.strings" -c "3 result.EN.strings" -i .github/test-resources/mobile-update-translations/configuration/input.csv
+          [ $? -eq 111 ] || exit 1
 
       - name: Test missing configuration for missing key row
         run: |
           set +e
-          sh lane.d/mobile-update-translations -t ios -m EN -o result.swift -c "4 DA result.DA.strings" -c "3 EN result.EN.strings" -i .github/test-resources/mobile-update-translations/configuration/input.csv
-          [ $? -eq 2 ] || exit 1
+          sh lane.d/mobile-update-translations/run.sh -t ios -m 3 -o result.swift -c "4 result.DA.strings" -c "3 result.EN.strings" -i .github/test-resources/mobile-update-translations/configuration/input.csv
+          [ $? -eq 111 ] || exit 1
 
       - name: Test missing configuration for missing output
         run: |
           set +e
-          sh lane.d/mobile-update-translations -t ios -k 1 -m EN -c "4 DA result.DA.strings" -c "3 EN result.EN.strings" -i .github/test-resources/mobile-update-translations/configuration/input.csv
-          [ $? -eq 2 ] || exit 1
+          sh lane.d/mobile-update-translations/run.sh -t ios -k 1 -m 3 -c "4 result.DA.strings" -c "3 result.EN.strings" -i .github/test-resources/mobile-update-translations/configuration/input.csv
+          [ $? -eq 111 ] || exit 1
 
       - name: Test ios output is created as expected
         run: |
           set +e
-          sh lane.d/mobile-update-translations -t ios -k 1 -m EN -o result.swift -c "4 DA result.DA.strings" -c "3 EN result.EN.strings" -i .github/test-resources/mobile-update-translations/configuration/input.csv
+          sh lane.d/mobile-update-translations/run.sh -t ios -k 1 -m 3 -o result.swift -c "4 result.DA.strings" -c "3 result.EN.strings" -i .github/test-resources/mobile-update-translations/configuration/input.csv
           [ $? -eq 0 ] || exit 1
           diff -q .github/test-resources/mobile-update-translations/expected-ios/result.swift result.swift > /dev/null || { echo "Unexpected difference:"; diff .github/test-resources/mobile-update-translations/expected-ios/result.swift result.swift; exit 1; }
           diff -q .github/test-resources/mobile-update-translations/expected-ios/result.EN.strings result.EN.strings > /dev/null || { echo "Unexpected difference:"; diff .github/test-resources/mobile-update-translations/expected-ios/result.EN.strings result.EN.strings; exit 1; }
@@ -355,7 +380,7 @@ jobs:
       - name: Test android output is created as expected
         run: |
           set +e
-          sh lane.d/mobile-update-translations -t android -k 1 -c "4 DA result.DA.strings" -c "3 EN result.EN.strings" -i .github/test-resources/mobile-update-translations/configuration/input.csv
+          sh lane.d/mobile-update-translations/run.sh -t android -k 1 -c "4 result.DA.strings" -c "3 result.EN.strings" -i .github/test-resources/mobile-update-translations/configuration/input.csv
           [ $? -eq 0 ] || exit 1
           diff -q .github/test-resources/mobile-update-translations/expected-android/result.EN.strings result.EN.strings > /dev/null || { echo "Unexpected difference:"; diff .github/test-resources/mobile-update-translations/expected-android/result.EN.strings result.EN.strings; exit 1; }
           diff -q .github/test-resources/mobile-update-translations/expected-android/result.DA.strings result.DA.strings > /dev/null || { echo "Unexpected difference:"; diff .github/test-resources/mobile-update-translations/expected-android/result.DA.strings result.DA.strings; exit 1; }
@@ -370,11 +395,11 @@ jobs:
       - name: Test non-existing file
         run: |
           set +e
-          sh lane.d/shell-run-github-workflow-tests -i ./non-existing-file > /dev/null
-          [ $? -eq 1 ] || exit 1
+          sh lane.d/shell-run-github-workflow-tests/run.sh -i ./non-existing-file > /dev/null
+          [ $? -eq 111 ] || exit 1
       - name: Test running tests
         run: |
-          sh lane.d/shell-run-github-workflow-tests -i .github/test-resources/shell-run-github-workflow-tests/test.yaml
+          sh lane.d/shell-run-github-workflow-tests/run.sh -i .github/test-resources/shell-run-github-workflow-tests/test.yaml
 
   shell-github-action-semver-compare:
     name: Test Shell Github Action Semver Compare
@@ -385,59 +410,68 @@ jobs:
       - name: Test missing arguments
         run: |
           set +e
-          sh lane.d/shell-github-action-semver-compare > /dev/null
-          [ $? -eq 2 ] || exit 1
+          sh lane.d/shell-github-action-semver-compare/run.sh > /dev/null
+          [ $? -eq 111 ] || exit 1
 
       - name: Test missing main version argument
         run: |
           set +e
-          sh lane.d/shell-github-action-semver-compare -c "0.0.0" > /dev/null
-          [ $? -eq 2 ] || exit 1
+          sh lane.d/shell-github-action-semver-compare/run.sh -c "0.0.0" > /dev/null
+          [ $? -eq 111 ] || exit 1
 
       - name: Test missing current version argument
         run: |
           set +e
-          sh lane.d/shell-github-action-semver-compare -m "0.0.0" > /dev/null
-          [ $? -eq 2 ] || exit 1
+          sh lane.d/shell-github-action-semver-compare/run.sh -m "0.0.0" > /dev/null
+          [ $? -eq 111 ] || exit 1
 
       - name: Test matching versions
         run: |
           set +e
-          sh lane.d/shell-github-action-semver-compare -m "0.0.0" -c "0.0.0" > /dev/null
+          sh lane.d/shell-github-action-semver-compare/run.sh -m "0.0.0" -c "0.0.0" > /dev/null
           [ $? -eq 10 ] || exit 1
 
       - name: Test descending versions
         run: |
           set +e
-          sh lane.d/shell-github-action-semver-compare -m "1.2.3" -c "0.0.0" > /dev/null
+          sh lane.d/shell-github-action-semver-compare/run.sh -m "1.2.3" -c "0.0.0" > /dev/null
           [ $? -eq 20 ] || exit 1
 
       - name: Test ascending versions
         run: |
           set +e
-          sh lane.d/shell-github-action-semver-compare -m "1.2.3" -c "3.2.1" > /dev/null
+          sh lane.d/shell-github-action-semver-compare/run.sh -m "1.2.3" -c "3.2.1" > /dev/null
           [ $? -eq 0 ] || exit 1
 
   shellcheck:
     name: Shellcheck
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Make files executable for shellcheck action to check them
-      run: |
-        chmod +x lane
-        find lane.d -name "run.sh" -type f -exec chmod +x {} \;
+      - name: Make files executable for shellcheck action to check them
+        run: |
+          chmod +x lane
+          find lane.d -name "run.sh" -type f -exec chmod +x {} \;
 
-    - name: Run ShellCheck
-      uses: ludeeus/action-shellcheck@master
-      with:
-        scandir: './lane.d'
-        additional_files: 'lane'
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          scandir: "./lane.d"
+          additional_files: "lane"
 
   tests-succeeded:
     name: Tests Succeeded
-    needs: [lane, mobile-static-resources-images, mobile-update-translations, shell-github-action-semver-compare, shellcheck]
+    needs:
+      - lane
+      - lane-d-requirements
+      - google-api-docs-sheets-download
+      - google-api-jwt-generate
+      - mobile-static-resources-images
+      - mobile-update-translations
+      - shell-github-action-semver-compare
+      - shellcheck
+
     runs-on: ubuntu-latest
     steps:
       - name: All clear

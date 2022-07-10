@@ -7,46 +7,25 @@ for command in curl base64 openssl jq; do
   fi
 done
 
-usage() {
-cat << END
-OPTIONS
-    -h show this usage
-    -i issuer
-    -s scope(s)
-    -p p12 file
-More information about obtaining a p12 file at https://developers.google.com/identity/protocols/oauth2/service-account
-END
-}
-
 unset -v issuer scopes p12
-while getopts "hi:s:p:" option; do
+while getopts "i:s:p:" option; do
   case $option in
-    i) issuer="$OPTARG" ;;
-    s) scopes="$OPTARG" ;;
-    p) p12="$OPTARG" ;;
-    \?)
-      echo "unknown option: $option"
-      usage
-      exit 1
-      ;;
-    h)
-      usage
-      exit 0
-      ;;
+  i) issuer="$OPTARG" ;;
+  s) scopes="$OPTARG" ;;
+  p) p12="$OPTARG" ;;
+  \?) exit 111 ;;
   esac
 done
 shift $((OPTIND - 1))
 
 if [ -z "$issuer" ] || [ -z "$scopes" ] || [ -z "$p12" ]; then
-    echo "Must provide issuer, scopes and an p12 file."
-    usage
-    exit 2
+  echo "Must provide issuer, scopes and an p12 file."
+  exit 111
 fi
 
 if [ ! -f "$p12" ]; then
-    echo "Must provide a p12 file."
-    usage
-    exit 4
+  echo "Must provide a p12 file."
+  exit 4
 fi
 
 DIR=$(mktemp -dq)
@@ -72,11 +51,11 @@ claim=$(printf '{
 encoded_header=$(echo "$header" | encode)
 encoded_claim=$(echo "$claim" | encode)
 
-printf '%s.%s' "${encoded_header}" "${encoded_claim}" > "$DIR/request"
-printf '%s.%s.' "${encoded_header}" "${encoded_claim}" > "$DIR/token"
+printf '%s.%s' "${encoded_header}" "${encoded_claim}" >"$DIR/request"
+printf '%s.%s.' "${encoded_header}" "${encoded_claim}" >"$DIR/token"
 
 openssl pkcs12 -in "$p12" -out "$DIR/key" -nocerts -nodes -passin pass:notasecret
-openssl dgst -sha256 -sign "$DIR/key" -out - "$DIR/request" | encode >> "$DIR/token"
+openssl dgst -sha256 -sign "$DIR/key" -out - "$DIR/request" | encode >>"$DIR/token"
 
 assertion=$(cat "$DIR/token")
 

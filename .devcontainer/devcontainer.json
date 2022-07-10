@@ -1,17 +1,20 @@
 {
-	"name": "Alpine",
-	"build": {
-		"dockerfile": "Dockerfile"
-	},
-	"remoteUser": "vscode",
-	"remoteEnv": {
-		"PATH": "${containerEnv:PATH}:/workspaces/lane"
-	},
-	"customizations": {
-		"vscode": {
-			"extensions": [
-				"EditorConfig.EditorConfig"
-			]
-		}
-	}
+    "name": "Alpine",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "remoteUser": "vscode",
+    "remoteEnv": {
+        "PATH": "${containerEnv:PATH}:/workspaces/lane"
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "EditorConfig.EditorConfig",
+                "foxundermoon.shell-format",
+                "redhat.vscode-yaml",
+                "ms-azuretools.vscode-docker"
+            ]
+        }
+    }
 }
