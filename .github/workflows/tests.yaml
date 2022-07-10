@@ -463,13 +463,15 @@ jobs:
   tests-succeeded:
     name: Tests Succeeded
     needs:
-      [
-        lane,
-        mobile-static-resources-images,
-        mobile-update-translations,
-        shell-github-action-semver-compare,
-        shellcheck,
-      ]
+      - lane
+      - lane-d-requirements
+      - google-api-docs-sheets-download
+      - google-api-jwt-generate
+      - mobile-static-resources-images
+      - mobile-update-translations
+      - shell-github-action-semver-compare
+      - shellcheck
+
     runs-on: ubuntu-latest
     steps:
       - name: All clear
