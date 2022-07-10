@@ -50,9 +50,9 @@ EXAMPLES
 If the contents of `input.csv` is:
 
 ```csv
-    KEY;UPDATE NEEDED;English;Danish;COMMENT
-    SOMETHING;;Something;Noget;
-    SOMETHING_WITH_ARGUMENTS;;Something with %1 and %2;Noget med %1 og %2;
+    KEY,UPDATE NEEDED,English,Danish,COMMENT
+    SOMETHING,,Something,Noget,
+    SOMETHING_WITH_ARGUMENTS,,Something with %1 and %2,Noget med %1 og %2,
 ```
 
 Android
