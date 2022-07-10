@@ -443,6 +443,19 @@ jobs:
           sh lane.d/shell-github-action-semver-compare/run.sh -m "1.2.3" -c "3.2.1" > /dev/null
           [ $? -eq 0 ] || exit 1
 
+      - name: Test quiet mode
+        run: |
+          touch expected
+
+          set +e
+          sh lane.d/shell-github-action-semver-compare/run.sh -m "1.2.3" -c "3.2.1" > result
+          [ $? -eq 0 ] || exit 1
+          diff -q expected result > /dev/null && { echo "There should be output without quiet mode"; exit 1; }
+
+          sh lane.d/shell-github-action-semver-compare/run.sh -m "1.2.3" -c "3.2.1" -q > result
+          [ $? -eq 0 ] || exit 1
+          diff -q expected result > /dev/null || { echo "Unexpected difference:"; diff expected result; exit 1; }
+
   shellcheck:
     name: Shellcheck
     runs-on: ubuntu-latest
