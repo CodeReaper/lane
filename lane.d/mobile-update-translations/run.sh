@@ -70,7 +70,7 @@ if [ "$type" = "ios" ]; then
 
     printf "" >"$file"
     while read -r line; do
-      key=$(echo "$line" | cut -d\| -f1)
+      key=$(echo "$line" | cut -d\| -f1 | sed 's|^"||g;s|"$||g')
       value=$(echo "$line" | cut -d\| -f2- | sed 's|^"||;s|"$||;s|\"|\\"|g')
       echo "\"$key\" = \"$value\";" >>"$file"
     done <"${TMP}/${offset}.csv"
@@ -84,7 +84,7 @@ if [ "$type" = "ios" ]; then
     echo 'struct Translations {'
 
     while read -r item; do
-      key=$(echo "$item" | cut -d\| -f1)
+      key=$(echo "$item" | cut -d\| -f1 | sed 's|^"||g;s|"$||g')
       value=$(echo "$item" | cut -d\| -f2-)
       parameters=$(echo "$value" | grep -o -E '%[0-9]+' | wc -l | tr -d ' \n')
 
@@ -113,7 +113,7 @@ if [ "$type" = "android" ]; then
 
     echo "<resources>" >"$file"
     while read -r line; do
-      key=$(echo "$line" | cut -d\| -f1 | tr "[:upper:]" "[:lower:]")
+      key=$(echo "$line" | cut -d\| -f1 | sed 's|^"||g;s|"$||g' | tr "[:upper:]" "[:lower:]")
       value=$(echo "$line" | cut -d\| -f2- | sed -E 's|(%[0-9]+)|\1$s|g;s|^"||;s|"$||')
       printf "\t<string name=\"%s\">%s</string>\n" "$key" "$value" >>"$file"
     done <"${TMP}/${offset}.csv"

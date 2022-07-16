@@ -395,6 +395,16 @@ jobs:
           [ $? -eq 0 ] || exit 1
           diff -q result expected > /dev/null || { echo "Unexpected difference:"; diff result expected; exit 1; }
 
+      - name: Test csv escaping on every column
+        run: |
+          printf '"key","en"\n"THIS","This is a longer sentence, which includes a comma."\n"THAT","Another string including a | even."' > input
+          printf '<resources>\n\t<string name="that">Another string including a | even.</string>\n\t<string name="this">This is a longer sentence, which includes a comma.</string>\n</resources>\n' > expected
+
+          set +e
+          sh lane.d/mobile-update-translations/run.sh -t android -k 1 -c "2 result" -i input
+          [ $? -eq 0 ] || exit 1
+          diff -q result expected > /dev/null || { echo "Unexpected difference:"; diff result expected; exit 1; }
+
   shell-run-github-workflow-tests:
     name: Test Shell Run Github Workflow Tests (always skipped on GitHub)
     runs-on: ubuntu-latest
