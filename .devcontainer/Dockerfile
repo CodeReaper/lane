@@ -1,7 +1,9 @@
-FROM mcr.microsoft.com/vscode/devcontainers/base:0-alpine-3.15
+FROM mcr.microsoft.com/vscode/devcontainers/base:ubuntu
 
-RUN apk add --no-cache --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community yq
+RUN wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && chmod +x /usr/local/bin/yq
 
-RUN apk add --no-cache shellcheck
+RUN apt-get update
 
-RUN apk add --no-cache openssl
+RUN apt-get install -y shellcheck
+
+RUN apt-get install -y openssl
