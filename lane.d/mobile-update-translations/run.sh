@@ -73,7 +73,7 @@ sed 's/|/\\\\\\/g' <"$input" | $python "${TMP}/parser" >"${TMP}/input"
 
 while read -r item; do
   offset=$(echo "$item" | cut -d\  -f1 | tr -d "[:blank:]")
-  tail +2 "${TMP}/input" | grep -v ^$ | cut -d\| -f"$key_row,$offset" | sed 's/\\\\\\/|/g' | sort >"${TMP}/${offset}.csv"
+  tail +2 "${TMP}/input" | grep -v ^$ | cut -d\| -f"$key_row,$offset" | sed 's/\\\\\\/|/g' | LC_ALL=C sort >"${TMP}/${offset}.csv"
 done <"${TMP}/mapping"
 
 if [ "$type" = "ios" ]; then
