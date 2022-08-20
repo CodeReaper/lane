@@ -23,7 +23,7 @@ done
 display_lanes() {
   echo "The available lanes are:"
   if [ -d lanes ]; then
-    find lanes -type f -mindepth 1 -maxdepth 1 | sed 's|^lanes/||g;s|^|  |g'
+    find lanes -mindepth 1 -maxdepth 1 -type f | sed 's|^lanes/||g;s|^|  |g'
   else
     echo '  No lanes found.'
   fi
