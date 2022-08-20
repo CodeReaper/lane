@@ -53,12 +53,27 @@ makedir() {
   mkdir -p "$parent" 2>/dev/null
 }
 
-# awk too magical
-sed 's/|/\\\\\\/g' <"$input" | awk -vOFS='|' -vq='"' 'func csv2del(n) { for(i=n; i<=c; i++) {if(i%2 == 1) gsub(/,/, OFS, a[i]); else a[i] = (q a[i] q); out = (out) ? out a[i] : a[i]}; return out} {c=split($0, a, q); out=X; if(a[1]) $0=csv2del(1); else $0=csv2del(2)}1' >"${TMP}/input"
+python=$(command -v python3 | head -n1)
+if [ ! -x "$python" ]; then
+  echo "Error: python3 is not installed." >&2
+  exit 1
+fi
+
+cat >"${TMP}/parser" <<EOF
+import sys
+import csv
+
+with open(sys.stdin.fileno()) as file:
+    reader = csv.reader(file, delimiter=',')
+    for row in reader:
+        print("|".join(map(lambda s: f'"{s}"', row)))
+EOF
+
+sed 's/|/\\\\\\/g' <"$input" | $python "${TMP}/parser" >"${TMP}/input"
 
 while read -r item; do
   offset=$(echo "$item" | cut -d\  -f1 | tr -d "[:blank:]")
-  tail +2 "${TMP}/input" | grep -v ^$ | cut -d\| -f"$key_row,$offset" | sed 's/\\\\\\/|/g' | sort >"${TMP}/${offset}.csv"
+  tail +2 "${TMP}/input" | grep -v ^$ | cut -d\| -f"$key_row,$offset" | sed 's/\\\\\\/|/g' | LC_ALL=C sort >"${TMP}/${offset}.csv"
 done <"${TMP}/mapping"
 
 if [ "$type" = "ios" ]; then

@@ -1,4 +1,4 @@
 yq 4.25.3
 jq 1.6
 shellcheck 0.8.0
-lane 0.0.2
+lane 0.0.11

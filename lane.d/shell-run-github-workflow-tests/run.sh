@@ -50,7 +50,7 @@ yq -o json "$file" | jq -rc '.jobs | to_entries[] | [{group: .key, groupName: .v
 
   {
     echo "echo; echo '$group_name ($group)'"
-    echo "GREEN=$'\e[0;32m'; RED=$'\e[0;31m'; NC=$'\e[0m'; PASS=0; FAIL=0"
+    echo "GREEN='\e[0;32m'; RED='\e[0;31m'; NC='\e[0m'; PASS=0; FAIL=0"
   } >"${DIR}/${group}.sh"
 
   if [ -n "$jobid" ] && [ ! "$jobid" = "$group" ]; then
@@ -96,6 +96,8 @@ tar -c --exclude .git . | tar -x -C "$DIR/workspace/"
 
 cd "$DIR/workspace/"
 git init >/dev/null 2>&1
+git config user.name "Anonymous"
+git config user.email "anonymous@example.com"
 git add . >/dev/null
 git commit -am "known state" >/dev/null
 echo ' done!'

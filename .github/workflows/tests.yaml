@@ -118,20 +118,20 @@ jobs:
       - name: Validate builtins has an entry point
         run: |
           find lane.d -mindepth 1 -maxdepth 1 -type d -exec sh -c 'test -f "$1/run.sh" || echo "$1"' -- {} \; > missing
-          count=$(wc -l missing | cut -d\  -f1)
-          [ $count -eq 0 ] || { cat missing; exit 1; }
+          count=$(wc -l < missing | sed 's/ //g')
+          [ "$count" = 0 ] || { cat missing; exit 1; }
 
       - name: Validate builtins has options descriptions
         run: |
           find lane.d -mindepth 1 -maxdepth 1 -type d -exec sh -c 'test -f "$1/options.md" || echo "$1"' -- {} \; > missing
-          count=$(wc -l missing | cut -d\  -f1)
-          [ $count -eq 0 ] || { cat missing; exit 1; }
+          count=$(wc -l < missing | sed 's/ //g')
+          [ "$count" = 0 ] || { cat missing; exit 1; }
 
       - name: Validate builtins has help available
         run: |
           find lane.d -mindepth 1 -maxdepth 1 -type d -exec sh -c 'test -f "$1/help.md" || echo "$1"' -- {} \; > missing
-          count=$(wc -l missing | cut -d\  -f1)
-          [ $count -eq 0 ] || { cat missing; exit 1; }
+          count=$(wc -l < missing | sed 's/ //g')
+          [ "$count" = 0 ] || { cat missing; exit 1; }
 
   google-api-docs-sheets-download:
     name: Test Google API Docs Sheets Download
@@ -162,16 +162,6 @@ jobs:
           set +e
           sh lane.d/google-api-docs-sheets-download/run.sh -i an-id -o result > /dev/null
           [ $? -eq 111 ] || exit 1
-
-      - name: Test missing curl command
-        run: |
-          export PATH=.github/test-mocks/curl/:$PATH
-          trap 'chmod +x .github/test-mocks/curl/curl' EXIT
-          chmod -x .github/test-mocks/curl/curl
-
-          set +e
-          sh lane.d/google-api-docs-sheets-download/run.sh -t a-token -i an-id -o result > /dev/null
-          [ $? -eq 3 ] || exit 1
 
       - name: Test google api curl error
         run: |

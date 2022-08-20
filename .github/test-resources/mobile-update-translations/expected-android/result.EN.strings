@@ -1,5 +1,5 @@
 <resources>
+	<string name="something">Something</string>
 	<string name="something_escaped">Something with ,</string>
 	<string name="something_with_arguments">Something with %1$s and %2$s</string>
-	<string name="something">Something</string>
 </resources>
