@@ -163,16 +163,6 @@ jobs:
           sh lane.d/google-api-docs-sheets-download/run.sh -i an-id -o result > /dev/null
           [ $? -eq 111 ] || exit 1
 
-      - name: Test missing curl command
-        run: |
-          export PATH=.github/test-mocks/curl/:$PATH
-          trap 'chmod +x .github/test-mocks/curl/curl' EXIT
-          chmod -x .github/test-mocks/curl/curl
-
-          set +e
-          sh lane.d/google-api-docs-sheets-download/run.sh -t a-token -i an-id -o result > /dev/null
-          [ $? -eq 3 ] || exit 1
-
       - name: Test google api curl error
         run: |
           export PATH=.github/test-mocks/curl/:$PATH
