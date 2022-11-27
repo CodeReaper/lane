@@ -7,8 +7,13 @@ trap 'set +x; cd "$OLD_PWD" >/dev/null 2>&1; rm -rf $TMP >/dev/null 2>&1' 0
 trap 'exit 2' 1 2 3 15
 
 if [ "$1" = "completion" ]; then
-  cat lane.d/completion.sh
-  exit 0
+  if [ "$2" = "zsh" ] || [ "$2" = "bash" ]; then
+    cat "lane.d/completion.$2.dotrc"
+    exit $?
+  else
+    echo "You must specify either 'zsh' or 'bash' completions" >&2
+    exit 1
+  fi
 fi
 
 if [ "$1" = "-h" ] || [ "$1" = "--help" ] || [ "$1" = "help" ]; then
@@ -39,7 +44,7 @@ display_lanes() {
 }
 
 if [ -z "$1" ]; then
-  display_lanes
+  display_lanes >&2
   exit 1
 fi
 
@@ -63,7 +68,7 @@ if [ -d "$builtin_lane" ]; then
   sh "$builtin_lane/run.sh" "$@"
   status=$?
   if [ $status -eq 111 ]; then
-    grep -v '^```' <"$builtin_lane/options.md"
+    grep -v '^```' <"$builtin_lane/options.md" >&2
     exit 1
   fi
   exit $status
@@ -76,6 +81,6 @@ if [ -f "$user_lane" ]; then
   exit 0
 fi
 
-echo "Unrecognized lane: '${1}'"
+echo "Unrecognized lane: '${1}'" >&2
 display_lanes
 exit 10
