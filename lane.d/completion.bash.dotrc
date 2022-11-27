@@ -1,0 +1,9 @@
+_lane() {
+  COMPREPLY=()
+  if [ "$1" = "$3" ]; then
+    mapfile -t COMPREPLY < <(lane lanes | grep "^$2")
+  fi
+  return 0
+}
+
+complete -F _lane lane

@@ -20,7 +20,7 @@ jobs:
           mkdir lanes
 
           set +e
-          sh ./lane > result
+          sh ./lane 2> result
           [ $? -eq 1 ] || exit 1
           echo 'The available lanes are:' > expected
           diff -q expected result || { echo "Unexpected difference:"; diff expected result; exit 1; }
@@ -59,6 +59,20 @@ jobs:
 
           diff -q 1 2 || { echo "Unexpected difference:"; diff 1 2; exit 1; }
           diff -q 2 3 || { echo "Unexpected difference:"; diff 2 3; exit 1; }
+
+      - name: Test completion argument
+        run: |
+          rm -rf lanes
+
+          set +e
+          sh ./lane completion bash > /dev/null
+          [ $? -eq 0 ] || exit 1
+
+          sh ./lane completion zsh > /dev/null
+          [ $? -eq 0 ] || exit 1
+
+          sh ./lane completion > /dev/null
+          [ $? -eq 1 ] || exit 1
 
       - name: Test missing lane
         run: |

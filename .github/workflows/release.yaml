@@ -37,7 +37,7 @@ jobs:
           printf 'Current version: %s\n' "$VERSION"
           echo '::endgroup::'
 
-          echo "::set-output name=version::$VERSION"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
   create-artifacts:
     name: Create Artifacts

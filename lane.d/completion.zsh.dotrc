@@ -1,0 +1,13 @@
+_lane() {
+  COMPREPLY=()
+  if [ "$1" = "$3" ]; then
+    if [ "$2" = "--" ]; then
+      set -- "$1" "" "$3"
+    fi
+    output=$(lane lanes | grep "^$2")
+    COMPREPLY=(${(f)output})
+  fi
+  return 0
+}
+
+complete -F _lane lane
