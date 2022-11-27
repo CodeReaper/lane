@@ -2,7 +2,27 @@
 
 `lane` is a task automation helper.
 
-## Manual/help
+## Installation
+
+The prefered method of installation is through [asdf](http://asdf-vm.com/).
+
+A lane plugin to install has been set up at [asdf-lane](https://github.com/CodeReaper/asdf-lane).
+
+## Completion
+
+You can set up auto completion by adding the following to your dot rc file:
+
+> ~/.zshrc
+```
+source <(lane completion zsh)
+```
+
+> ~/.bashrc
+```
+source <(lane completion bash)
+```
+
+## Manuals
 
 [lane](lane.d/help.md)
 
@@ -20,11 +40,3 @@
 
 - [lane shell-github-action-semver-compare](lane.d/shell-github-action-semver-compare/help.md)
 - [lane shell-run-github-workflow-tests](lane.d/shell-run-github-workflow-tests/help.md)
-
-## Goals
-
-- Add autocomplete for:
-- - user lanes
-- - builtin lanes
-- Add help for version check and installation
-- Ensure test job `tests-succeeded` needs "all"

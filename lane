@@ -6,6 +6,11 @@ LANED_PWD=$(realpath "${0}.d")
 trap 'set +x; cd "$OLD_PWD" >/dev/null 2>&1; rm -rf $TMP >/dev/null 2>&1' 0
 trap 'exit 2' 1 2 3 15
 
+if [ "$1" = "completion" ]; then
+  cat lane.d/completion.sh
+  exit 0
+fi
+
 if [ "$1" = "-h" ] || [ "$1" = "--help" ] || [ "$1" = "help" ]; then
   grep -v '^```' <lane.d/help.md
   exit 0
@@ -20,10 +25,14 @@ while [ ! -d lanes ] && [ ! "$(pwd)" = '/' ]; do
   cd ..
 done
 
+list_lanes() {
+  find lanes -mindepth 1 -maxdepth 1 -type f | sed 's|^lanes/||g;s|^\s*||g'
+}
+
 display_lanes() {
   echo "The available lanes are:"
   if [ -d lanes ]; then
-    find lanes -mindepth 1 -maxdepth 1 -type f | sed 's|^lanes/||g;s|^|  |g'
+    list_lanes | sed 's|^|  |g'
   else
     echo '  No lanes found.'
   fi
@@ -32,6 +41,11 @@ display_lanes() {
 if [ -z "$1" ]; then
   display_lanes
   exit 1
+fi
+
+if [ "$1" = "lanes" ]; then
+  list_lanes
+  exit 0
 fi
 
 builtin_lane="${LANED_PWD}/$1/"
