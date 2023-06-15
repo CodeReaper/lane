@@ -3,12 +3,12 @@
 OLD_PWD=$(pwd)
 LANED_PWD=$(realpath "${0}.d")
 
-trap 'set +x; cd "$OLD_PWD" >/dev/null 2>&1; rm -rf $TMP >/dev/null 2>&1' 0
+trap 'set +x; cd "$OLD_PWD" >/dev/null 2>&1;' 0
 trap 'exit 2' 1 2 3 15
 
 if [ "$1" = "completion" ]; then
   if [ "$2" = "zsh" ] || [ "$2" = "bash" ]; then
-    cat "lane.d/completion.$2.dotrc"
+    cat "${LANED_PWD}/completion.$2.dotrc"
     exit $?
   else
     echo "You must specify either 'zsh' or 'bash' completions" >&2
@@ -17,7 +17,7 @@ if [ "$1" = "completion" ]; then
 fi
 
 if [ "$1" = "-h" ] || [ "$1" = "--help" ] || [ "$1" = "help" ]; then
-  grep -v '^```' <lane.d/help.md
+  grep -v '^```' <"${LANED_PWD}/help.md"
   exit 0
 fi
 
@@ -31,7 +31,7 @@ while [ ! -d lanes ] && [ ! "$(pwd)" = '/' ]; do
 done
 
 list_lanes() {
-  find lanes -mindepth 1 -maxdepth 1 -type f | sed 's|^lanes/||g;s|^\s*||g'
+  find lanes -mindepth 1 -maxdepth 1 -type f | sed 's|^lanes/||g;s|^\s*||g' | sort
 }
 
 display_lanes() {

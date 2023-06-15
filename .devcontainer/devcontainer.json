@@ -14,7 +14,13 @@
                 "foxundermoon.shell-format",
                 "redhat.vscode-yaml",
                 "ms-azuretools.vscode-docker"
-            ]
+            ],
+            "settings": {
+                "editor.formatOnSave": true,
+                "yaml.schemas": {
+                    "https://json.schemastore.org/github-workflow.json": "file:///workspaces/lane/.github/**.yaml"
+                }
+            }
         }
     }
 }

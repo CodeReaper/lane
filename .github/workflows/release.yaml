@@ -32,11 +32,7 @@ jobs:
         id: version
         run: |
           VERSION=$(cat version | sed 's|[^0-9\.]||g')
-
-          echo '::group::Resolved version'
           printf 'Current version: %s\n' "$VERSION"
-          echo '::endgroup::'
-
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
   create-artifacts:

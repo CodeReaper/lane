@@ -1,8 +1,0 @@
-{
-  "recommendations": [
-    "editorconfig.editorconfig",
-    "foxundermoon.shell-format",
-    "redhat.vscode-yaml",
-    "ms-azuretools.vscode-docker"
-  ]
-}
