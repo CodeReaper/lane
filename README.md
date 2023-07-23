@@ -1,10 +1,8 @@
-# lane
-
-<p align="center">
 ![version](https://img.shields.io/github/v/release/CodeReaper/lane)
 ![tests](https://github.com/CodeReaper/lane/actions/workflows/tests.yaml/badge.svg)
 ![license](https://img.shields.io/github/license/CodeReaper/lane.svg)
-</p>
+
+# lane
 
 `lane` is a task automation helper.
 
