@@ -29,11 +29,12 @@ mkdir -p "$parent" 2>/dev/null
   echo 'import UIKit'
   echo 'struct Images {'
 
-  find "$input" -type d -iname "*.imageset" | while read -r item; do
+  find "$input" -type d -iname "*.imageset" | LC_ALL=C sort | while read -r item; do
     name=$(basename "$item" .imageset)
     safe_name=$(echo "$name" | sed 's/-/_/g;s/ /_/g')
     printf "\tstatic let %s = UIImage(named:\"%s\")!\n" "$safe_name" "$name"
   done
 
   echo '}'
+  echo '// swiftlint:enable all'
 } >"$output"

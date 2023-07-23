@@ -2,3 +2,4 @@
 import UIKit
 struct Images {
 }
+// swiftlint:enable all
