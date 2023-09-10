@@ -34,11 +34,11 @@ trap 'set +x; rm -fr $DIR >/dev/null 2>&1' 0
 trap 'exit 2' 1 2 3 15
 
 encode() {
-  base64 - | tr -d '\n=' | tr '/+' '_-'
+  base64 | tr -d '\n=' | tr '/+' '_-'
 }
 
-iat=$(date +"%s")
-exp=$(date -d +5mins +"%s")
+iat=$(jq -n 'now|floor')
+exp=$(jq -n 'now|floor| . + 300')
 header='{"alg":"RS256","typ":"JWT"}'
 claim=$(printf '{
   "iss": "%s",
@@ -54,8 +54,8 @@ encoded_claim=$(echo "$claim" | encode)
 printf '%s.%s' "${encoded_header}" "${encoded_claim}" >"$DIR/request"
 printf '%s.%s.' "${encoded_header}" "${encoded_claim}" >"$DIR/token"
 
-openssl pkcs12 -in "$p12" -out "$DIR/key" -nocerts -nodes -passin pass:notasecret
-openssl dgst -sha256 -sign "$DIR/key" -out - "$DIR/request" | encode >>"$DIR/token"
+openssl pkcs12 -in "$p12" -out "$DIR/key" -nocerts -nodes -passin pass:notasecret 2>/dev/null
+openssl dgst -sha256 -sign "$DIR/key" "$DIR/request" | encode >>"$DIR/token"
 
 assertion=$(cat "$DIR/token")
 

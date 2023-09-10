@@ -96,8 +96,9 @@ tar -c --exclude .git . | tar -x -C "$DIR/workspace/"
 
 cd "$DIR/workspace/"
 git init >/dev/null 2>&1
-git config user.name "Anonymous"
-git config user.email "anonymous@example.com"
+git config --local user.email "test@runner.local"
+git config --local user.name "Test Runner"
+git config --local commit.gpgsign false
 git add . >/dev/null
 git commit -am "known state" >/dev/null
 echo ' done!'
