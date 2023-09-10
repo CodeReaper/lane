@@ -72,7 +72,7 @@ with open(sys.stdin.fileno()) as file:
     reader = csv.reader(file, delimiter=',')
     for row in reader:
         if row[key]:
-            v = row[value]
+            v = row[value].replace("\n", "\\\\n")
             print("|".join([row[key], escape(v) if should_escape else v]))
 EOF
 

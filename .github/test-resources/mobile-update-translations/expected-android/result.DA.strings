@@ -3,4 +3,5 @@
 	<string name="something_escaped">Noget med ,</string>
 	<string name="something_for_xml">Som &amp; og &lt;b&gt;fremhævet&lt;/b&gt; tekst</string>
 	<string name="something_with_arguments">Noget med %1$s og %2$s</string>
+	<string name="watch_out_for_new_lines">Tekst\nmed\nline\nskift</string>
 </resources>
