@@ -59,21 +59,23 @@ if [ ! -x "$python" ]; then
   exit 1
 fi
 
-cat >"${TMP}/parser" <<EOF
+cat >"${TMP}/extract" <<EOF
 import sys
 import csv
+
+key = int(sys.argv[1]) - 1
+value = int(sys.argv[2]) - 1
 
 with open(sys.stdin.fileno()) as file:
     reader = csv.reader(file, delimiter=',')
     for row in reader:
-        print("|".join(map(lambda s: f'"{s}"', row)))
+        if row[key]:
+            print("|".join([row[key], row[value].replace("\n", "\\\\n")]))
 EOF
-
-sed 's/|/\\\\\\/g' <"$input" | $python "${TMP}/parser" >"${TMP}/input"
 
 while read -r item; do
   offset=$(echo "$item" | cut -d\  -f1 | tr -d "[:blank:]")
-  tail +2 "${TMP}/input" | grep -v ^$ | cut -d\| -f"$key_row,$offset" | sed 's/\\\\\\/|/g' | LC_ALL=C sort >"${TMP}/${offset}.csv"
+  tail +2 "$input" | sed 's/|/\\\\\\/g' | $python "${TMP}/extract" "$key_row" "$offset" | sed 's/\\\\\\/|/g' | LC_ALL=C sort -t \| -k1,1 >"${TMP}/${offset}.csv"
 done <"${TMP}/mapping"
 
 if [ "$type" = "ios" ]; then
@@ -128,8 +130,8 @@ if [ "$type" = "android" ]; then
 
     echo "<resources>" >"$file"
     while read -r line; do
-      key=$(echo "$line" | cut -d\| -f1 | sed 's|^"||g;s|"$||g' | tr "[:upper:]" "[:lower:]")
-      value=$(echo "$line" | cut -d\| -f2- | sed -E 's|(%[0-9]+)|\1$s|g;s|^"||;s|"$||')
+      key=$(printf "%s" "$line" | cut -d\| -f1 | sed 's|^"||g;s|"$||g' | tr "[:upper:]" "[:lower:]")
+      value=$(printf "%s" "$line" | cut -d\| -f2- | sed -E 's|%|%%|g;s|%%([0-9]+)|%\1$s|g;s|^"||;s|"$||')
       printf "\t<string name=\"%s\">%s</string>\n" "$key" "$value" >>"$file"
     done <"${TMP}/${offset}.csv"
     echo "</resources>" >>"$file"
