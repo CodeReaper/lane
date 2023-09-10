@@ -75,7 +75,6 @@ EOF
 
 while read -r item; do
   offset=$(echo "$item" | cut -d\  -f1 | tr -d "[:blank:]")
-  tail +2 "$input" | sed 's/|/\\\\\\/g' | $python "${TMP}/extract" "$key_row" "$offset" | sed 's/\\\\\\/|/g' | LC_ALL=C sort
   tail +2 "$input" | sed 's/|/\\\\\\/g' | $python "${TMP}/extract" "$key_row" "$offset" | sed 's/\\\\\\/|/g' | LC_ALL=C sort -t \| -k1,1 >"${TMP}/${offset}.csv"
 done <"${TMP}/mapping"
 
