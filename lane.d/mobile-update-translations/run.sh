@@ -72,7 +72,7 @@ with open(sys.stdin.fileno()) as file:
     reader = csv.reader(file, delimiter=',')
     for row in reader:
         if row[key]:
-            v = row[value]
+            v = row[value].replace("\n", "\\\\n")
             print("|".join([row[key], escape(v) if should_escape else v]))
 EOF
 
@@ -91,9 +91,9 @@ if [ "$type" = "ios" ]; then
 
     printf "" >"$file"
     while read -r line; do
-      key=$(echo "$line" | cut -d\| -f1 | sed 's|^"||g;s|"$||g')
-      value=$(echo "$line" | cut -d\| -f2- | sed 's|^"||;s|"$||;s|\"|\\"|g')
-      echo "\"$key\" = \"$value\";" >>"$file"
+      key=$(printf "%s" "$line" | cut -d\| -f1 | sed 's|^"||g;s|"$||g')
+      value=$(printf "%s" "$line" | cut -d\| -f2- | sed 's|^"||;s|"$||;s|\"|\\"|g')
+      printf "\"%s\" = \"%s\";\n" "$key" "$value" >>"$file"
     done <"${TMP}/${offset}.csv"
 
   done <"${TMP}/mapping"
@@ -105,8 +105,8 @@ if [ "$type" = "ios" ]; then
     echo 'struct Translations {'
 
     while read -r item; do
-      key=$(echo "$item" | cut -d\| -f1 | sed 's|^"||g;s|"$||g')
-      value=$(echo "$item" | cut -d\| -f2-)
+      key=$(printf "%s" "$item" | cut -d\| -f1 | sed 's|^"||g;s|"$||g')
+      value=$(printf "%s" "$item" | cut -d\| -f2-)
       parameters=$(echo "$value" | grep -o -E '%[0-9]+' | wc -l | tr -d ' \n')
 
       if [ "$parameters" = "0" ]; then

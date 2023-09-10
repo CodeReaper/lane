@@ -2,3 +2,4 @@
 "SOMETHING_ESCAPED" = "Noget med ,";
 "SOMETHING_FOR_XML" = "Som & og <b>fremhævet</b> tekst";
 "SOMETHING_WITH_ARGUMENTS" = "Noget med %1 og %2";
+"WATCH_OUT_FOR_NEW_LINES" = "Tekst\nmed\nline\nskift";
