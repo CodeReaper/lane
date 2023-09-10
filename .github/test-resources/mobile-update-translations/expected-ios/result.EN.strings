@@ -1,3 +1,4 @@
 "SOMETHING" = "Something";
 "SOMETHING_ESCAPED" = "Something with ,";
+"SOMETHING_FOR_XML" = "Like & and <b>bold</b> text";
 "SOMETHING_WITH_ARGUMENTS" = "Something with %1 and %2";

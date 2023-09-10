@@ -1,3 +1,4 @@
 "SOMETHING" = "Noget";
 "SOMETHING_ESCAPED" = "Noget med ,";
+"SOMETHING_FOR_XML" = "Som & og <b>fremhævet</b> tekst";
 "SOMETHING_WITH_ARGUMENTS" = "Noget med %1 og %2";
