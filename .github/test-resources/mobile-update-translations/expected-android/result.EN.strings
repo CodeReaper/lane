@@ -1,7 +1,7 @@
 <resources>
 	<string name="something">Something</string>
 	<string name="something_escaped">Something with ,</string>
-	<string name="something_for_xml">Like &amp; and &lt;b&gt;bold&lt;/b&gt; text</string>
+	<string name="something_for_xml">It\'s like &amp; and &lt;b&gt;bold&lt;/b&gt; \"text\" or 官话</string>
 	<string name="something_with_arguments">Something with %1$s and %2$s</string>
 	<string name="watch_out_for_new_lines">Text\nwith\nnew\nlines</string>
 </resources>
