@@ -1,6 +1,7 @@
 #!/bin/sh
 
 TMP=$(mktemp -dq)
+BASE=$(dirname "$0")
 trap 'set +x; rm -rf $TMP 2>/dev/null 2>&1' 0
 trap 'exit 2' 1 2 3 15
 
@@ -59,27 +60,10 @@ if [ ! -x "$python" ]; then
   exit 1
 fi
 
-cat >"${TMP}/extract" <<EOF
-import sys
-import csv
-from xml.sax.saxutils import escape
-
-key = int(sys.argv[1]) - 1
-value = int(sys.argv[2]) - 1
-should_escape = int(sys.argv[3]) == 1
-
-with open(sys.stdin.fileno()) as file:
-    reader = csv.reader(file, delimiter=',')
-    for row in reader:
-        if row[key]:
-            v = row[value].replace("\n", "\\\\n")
-            print("|".join([row[key], escape(v) if should_escape else v]))
-EOF
-
 while read -r item; do
   offset=$(echo "$item" | cut -d\  -f1 | tr -d "[:blank:]")
   [ "$type" = "android" ] && escape=1 || escape=0
-  tail +2 "$input" | sed 's/|/\\\\\\/g' | $python "${TMP}/extract" "$key_row" "$offset" "$escape" | sed 's/\\\\\\/|/g' | LC_ALL=C sort -t \| -k1,1 >"${TMP}/${offset}.csv"
+  tail +2 "$input" | sed 's/|/\\\\\\/g' | $python "${BASE}/extract.py" "$key_row" "$offset" "$escape" | sed 's/\\\\\\/|/g' | LC_ALL=C sort -t \| -k1,1 >"${TMP}/${offset}.csv"
 done <"${TMP}/mapping"
 
 if [ "$type" = "ios" ]; then
