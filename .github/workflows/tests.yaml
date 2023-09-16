@@ -129,6 +129,7 @@ jobs:
           touch lanes/say
           touch lanes/touch
 
+          set +e
           sh ./lane 2> result
           [ $? -eq 1 ] || exit 1
           printf 'The available lanes are:\n  say\n  touch\n' > expected
