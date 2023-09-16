@@ -112,15 +112,27 @@ jobs:
         run: |
           rm -rf lanes
           mkdir lanes
-          mkdir lanes/say
           mkdir lane.d/say
-          echo 'echo false' > lanes/say/run.sh
+          echo 'echo false' > lanes/say
           echo 'echo true' > lane.d/say/run.sh
 
           set +e
           sh ./lane say > result
           [ $? -eq 0 ] || exit 1
           echo 'true' > expected
+          diff -q expected result || { echo "Unexpected difference:"; diff expected result; exit 1; }
+
+      - name: Test listing lanes
+        run: |
+          rm -rf lanes
+          mkdir lanes
+          touch lanes/say
+          touch lanes/touch
+
+          set +e
+          sh ./lane 2> result
+          [ $? -eq 1 ] || exit 1
+          printf 'The available lanes are:\n  say\n  touch\n' > expected
           diff -q expected result || { echo "Unexpected difference:"; diff expected result; exit 1; }
 
   lane-d-requirements:

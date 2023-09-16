@@ -31,7 +31,7 @@ while [ ! -d lanes ] && [ ! "$(pwd)" = '/' ]; do
 done
 
 list_lanes() {
-  find lanes -mindepth 1 -maxdepth 1 -type f | sed 's|^lanes/||g;s|^\s*||g' | sort
+  find lanes -mindepth 1 -maxdepth 1 -type f | sed 's|^lanes/||g' | sort
 }
 
 display_lanes() {
