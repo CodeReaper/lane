@@ -23,15 +23,26 @@ jobs:
       - name: Verify version
         if: github.ref != 'refs/heads/main'
         run: |
-          MAIN=$(cat branch-main/version)
+          MAIN=$(cat branch-main/version | cut -d. -f1-2)
           VERSION=$(cat version)
 
-          sh lane.d/shell-github-action-semver-compare/run.sh -m "$MAIN" -c "$VERSION"
+          set +e
+          sh lane.d/shell-github-action-semver-compare/run.sh -m "$MAIN.0" -c "$VERSION.0"
+          if [ $? -ne 0 ] && [ $? -eq 10 ]; then
+            exit 1
+          fi
+
+      - name: Find minor version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "major=$(cat version | sed 's|[^0-9\.]||g')" >> $GITHUB_ENV
+          echo "minor=$(gh api repos/${{ github.repository }}/commits?sha=main --paginate | jq length | tr -d \\n)" >> $GITHUB_ENV
 
       - name: Output version
         id: version
         run: |
-          VERSION=$(cat version | sed 's|[^0-9\.]||g')
+          VERSION=${{ env.major }}.${{ env.minor }}
           printf 'Current version: %s\n' "$VERSION"
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
