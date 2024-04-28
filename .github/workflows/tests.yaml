@@ -45,6 +45,17 @@ jobs:
       - run: check-jsonschema --schemafile schema.json .github/dependabot.yml
         shell: bash
 
+  workflow-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: asdf-vm/actions/install@v3
+        with:
+          tool_versions: |
+            action-validator 0.6.0
+      - name: Lint workflows
+        run: find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \) | xargs -I {} action-validator --verbose {}
+
   tests-succeeded:
     name: Tests Succeeded
     needs:
@@ -52,6 +63,7 @@ jobs:
       - shellcheck
       - editorconfig-check
       - dependabot-validate
+      - workflow-validate
 
     runs-on: ubuntu-latest
     steps:
