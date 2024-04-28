@@ -433,9 +433,26 @@ jobs:
           set +e
           sh lane.d/shell-run-github-workflow-tests/run.sh -i ./non-existing-file > /dev/null
           [ $? -eq 111 ] || exit 1
+
       - name: Test running tests
         run: |
+          set +e
           sh lane.d/shell-run-github-workflow-tests/run.sh -i .github/test-resources/shell-run-github-workflow-tests/test.yaml
+          [ $? -eq 1 ] || exit 1
+
+      - name: Test running unknown test section (has no tests and thus no errors)
+        run: |
+          sh lane.d/shell-run-github-workflow-tests/run.sh -i .github/test-resources/shell-run-github-workflow-tests/test.yaml -j unknown-tests
+
+      - name: Test running passing tests
+        run: |
+          sh lane.d/shell-run-github-workflow-tests/run.sh -i .github/test-resources/shell-run-github-workflow-tests/test.yaml -j passing-tests
+
+      - name: Test running failing tests
+        run: |
+          set +e
+          sh lane.d/shell-run-github-workflow-tests/run.sh -i .github/test-resources/shell-run-github-workflow-tests/test.yaml -j failing-tests
+          [ $? -eq 1 ] || exit 1
 
   shell-github-action-semver-compare:
     name: Test Shell Github Action Semver Compare

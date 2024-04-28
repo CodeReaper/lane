@@ -71,7 +71,8 @@ yq -o json "$file" | jq -rc '.jobs | to_entries[] | [{group: .key, groupName: .v
     {
       echo "printf ' - ${step_name}: '"
       echo "set +e; sh '${DIR}/${group}.${I}.sh' > messages 2>&1"
-      printf "if [ \$? -eq 0 ]; then printf \${GREEN}'Pass\n'\${NC}; PASS=\$((PASS+1)); else printf \${RED}'Fail\n'\${NC}; FAIL=\$((FAIL+1)); cat messages; fi;\n"
+      echo "ERROR=\$?"
+      printf "if [ \$ERROR -eq 0 ]; then printf \${GREEN}'Pass\n'\${NC}; PASS=\$((PASS+1)); else printf \${RED}'Failed with exit code %%s\n'\${NC} \$ERROR; FAIL=\$((FAIL+1)); cat messages; fi;\n"
     } >>"${DIR}/${group}.sh"
 
     I=$((I + 1))
@@ -86,6 +87,8 @@ done
   echo 'TOTAL=$((TOTAL_PASS+TOTAL_FAIL))'
   # shellcheck disable=SC2016
   printf 'echo; printf "Tests; Total: \033[1m${TOTAL}\033[0m Passes: \033[1m${TOTAL_PASS}\033[0m Fails: \033[1m${TOTAL_FAIL}\033[0m\n"\n'
+  # shellcheck disable=SC2016
+  echo 'if [ $TOTAL_FAIL -ne 0 ]; then exit 1; fi'
 } >>"$DIR/runner.sh"
 
 echo ' done!'
