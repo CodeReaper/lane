@@ -8,8 +8,8 @@ on:
       - main
 
 jobs:
-  test-inner-test-run:
-    name: Test inner test run
+  passing-tests:
+    name: Passing tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -17,3 +17,13 @@ jobs:
       - name: Test that passes
         run: |
           echo 'Test-in-tests'
+
+  failing-tests:
+    name: Failing tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Test that fails
+        run: |
+          exit 2

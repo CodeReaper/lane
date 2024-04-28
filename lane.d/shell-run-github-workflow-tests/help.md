@@ -67,7 +67,7 @@ The output would be:
 
     Test run (test-run)
     - Test that passes: Pass
-    - Test that fails: Fail
+    - Test that fails: Failed with exit code 1
 
     Tests; Total: 2 Passes: 1 Fails: 1
 ```
