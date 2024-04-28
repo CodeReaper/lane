@@ -1,21 +1,30 @@
 root = true
 
 [*]
-indent_style = space
-indent_size = 4
 end_of_line = lf
 charset = utf-8
 trim_trailing_whitespace = true
 insert_final_newline = true
 
-[*.sh]
+[.*]
 indent_size = 2
+indent_style = space
 
-[*.yaml]
+[*.sh,dotrc]
 indent_size = 2
+indent_style = space
+
+[*.{yml,yaml}]
+indent_size = 2
+indent_style = space
 
 [lane]
 indent_size = 2
+indent_style = space
 
 [version]
 insert_final_newline = false
+
+[*.md]
+indent_size = unset
+indent_style = unset
