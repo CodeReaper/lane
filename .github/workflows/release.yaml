@@ -29,10 +29,8 @@ jobs:
           set +e
           sh lane.d/shell-github-action-semver-compare/run.sh -m "$MAIN.0" -c "$VERSION.0"
           exitcode=$?
-          echo "exitcode=$exitcode"
-          if [ $exitcode -ne 0 ] && [ $exitcode -eq 10 ]; then
-            exit 1
-          fi
+          [ $exitcode -eq 10 ] && exit 0
+          exit $exitcode
 
       - name: Find minor version
         env:
