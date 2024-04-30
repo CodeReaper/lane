@@ -4,6 +4,11 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    groups:
+      pages-and-artifact-actions:
+        patterns:
+          - "actions/*pages*"
+          - "actions/*-artifact"
   - package-ecosystem: docker
     directory: /.devcontainer/
     schedule:
