@@ -65,7 +65,7 @@ jobs:
           path: lane-*.tar.*
 
   create-release:
-    name: Update Release
+    name: Create Release
     needs: [version, create-artifacts]
     runs-on: ubuntu-latest
     steps:
