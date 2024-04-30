@@ -506,7 +506,7 @@ jobs:
           diff -q expected result > /dev/null || { echo "Unexpected difference:"; diff expected result; exit 1; }
 
   unit-tests-succeeded:
-    name: Tests Succeeded
+    name: Unit Tests Succeeded
     needs:
       - lane
       - lane-d-requirements

@@ -47,9 +47,8 @@ jobs:
 
       - name: Package files
         run: |
-          VERSION=$(cat version)
           cd bundle
-          tar -cJf "../lane-${VERSION}.tar.xz" *
+          tar -cJf "../lane-${{ needs.version.outputs.version }}.tar.xz" *
 
       - name: Calculate checksums
         run: |
