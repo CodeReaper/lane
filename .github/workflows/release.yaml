@@ -2,53 +2,27 @@ name: Release
 
 on:
   pull_request: {}
-  push:
-    branches:
-      - main
+  release:
+    types:
+      - published
 
 jobs:
-  version-check:
+  version:
     name: Verify version
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.version.outputs.version }}
+      version: ${{ env.version }}
     steps:
-      - uses: actions/checkout@v3
+      - name: Output real version
+        run: echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
-      - uses: actions/checkout@v3
-        with:
-          ref: main
-          path: branch-main
-
-      - name: Verify version
-        if: github.ref != 'refs/heads/main'
-        run: |
-          MAIN=$(cat branch-main/version | cut -d. -f1-2)
-          VERSION=$(cat version)
-
-          set +e
-          sh lane.d/shell-github-action-semver-compare/run.sh -m "$MAIN.0" -c "$VERSION.0"
-          exitcode=$?
-          [ $exitcode -eq 10 ] && exit 0
-          exit $exitcode
-
-      - name: Find minor version
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          echo "major=$(cat version | sed 's|[^0-9\.]||g')" >> $GITHUB_ENV
-          echo "minor=$(gh api repos/${{ github.repository }}/commits?sha=main --paginate | jq length | tr -d \\n)" >> $GITHUB_ENV
-
-      - name: Output version
-        id: version
-        run: |
-          VERSION=${{ env.major }}.${{ env.minor }}
-          printf 'Current version: %s\n' "$VERSION"
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+      - name: Output faked version
+        if: github.event_name == 'pull_request'
+        run: echo "version=0.0.0" >> $GITHUB_ENV
 
   create-artifacts:
     name: Create Artifacts
-    needs: version-check
+    needs: version
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -61,7 +35,7 @@ jobs:
 
       - name: Bundle version-injected-lane
         run: |
-          VERSION='${{ needs.version-check.outputs.version }}'
+          VERSION='${{ needs.version.outputs.version }}'
           printf '#!/bin/sh\nVERSION=''%s''\n' "$VERSION" > bundle/lane
           tail +2 lane >> bundle/lane
           chmod +x bundle/lane
@@ -90,9 +64,9 @@ jobs:
           name: release-artifacts
           path: lane-*.tar.*
 
-  create-release:
-    name: Create Release
-    needs: [version-check, create-artifacts]
+  update-release:
+    name: Update Release
+    needs: [version, create-artifacts]
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
@@ -104,9 +78,9 @@ jobs:
       - name: Display structure of files
         run: ls -Rl
 
-      - name: Create Release
+      - name: Attach files
         if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: "${{ needs.version-check.outputs.version }}"
+          tag_name: "${{ needs.version.outputs.version }}"
           files: artifacts/*
