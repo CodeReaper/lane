@@ -8,7 +8,7 @@ jobs:
     name: Test Lane
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Test missing argument
         run: |
@@ -135,7 +135,7 @@ jobs:
     name: Test lane.d Requirements
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Validate builtins has an entry point
         run: |
@@ -159,7 +159,7 @@ jobs:
     name: Test Google API Docs Sheets Download
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Test missing arguments
         run: |
@@ -223,7 +223,7 @@ jobs:
     name: Test Google API JWT Generate
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup
         run: |
@@ -287,7 +287,7 @@ jobs:
     name: Test Static Resources Images
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup
         run: |
@@ -342,7 +342,7 @@ jobs:
     name: Test Update Translations
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Test missing argument
         run: |
@@ -422,7 +422,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ false }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Test non-existing file
         run: |
@@ -454,7 +454,7 @@ jobs:
     name: Test Shell Github Action Semver Compare
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Test missing arguments
         run: |
