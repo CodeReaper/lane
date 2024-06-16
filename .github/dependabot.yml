@@ -9,7 +9,7 @@ updates:
         patterns:
           - "actions/*pages*"
           - "actions/*-artifact"
-  - package-ecosystem: docker
-    directory: /.devcontainer/
+  - package-ecosystem: gomod
+    directory: /
     schedule:
       interval: weekly

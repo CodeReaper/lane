@@ -1,5 +1,0 @@
-"SOMETHING" = "Something";
-"SOMETHING_ESCAPED" = "Something with ,";
-"SOMETHING_FOR_XML" = "It's like & and <b>bold</b> \"text\" or 官话";
-"SOMETHING_WITH_ARGUMENTS" = "Something with %1 and %2";
-"WATCH_OUT_FOR_NEW_LINES" = "Text\nwith\nnew\nlines";
