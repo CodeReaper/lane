@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/codereaper/lane/internal/downloader"
@@ -28,9 +29,13 @@ func newTranslationsCommand() *cobra.Command {
 }
 
 func newTranslationsDownloadCommand() *cobra.Command {
-	var additionalHelp = `Authentication is done using a json file issued by Google.
-You get this json file by creating a "Service Account Key", which if you do not have a service account, requires you to first create a service account.
+	var additionalHelp = `Authentication is done using a json file issued by Google. You get this json file by creating a "Service Account Key", which if you do not have a service account, requires you to first create a service account.
+
 Creating both an account and a key is explaining here: https://developers.google.com/identity/protocols/oauth2/service-account#creatinganaccount
+
+You may have to enable Google Drive API access when using it for the first time. The error message(s) should provide a direct link to enabling access.
+
+Make sure to share the sheet with the 'client_email' assigned to your service account.
 `
 	var flags downloader.Flags
 	var cmd = &cobra.Command{
@@ -39,21 +44,16 @@ Creating both an account and a key is explaining here: https://developers.google
 		Long:    additionalHelp,
 		Example: "  lane translations download -o output.csv -c googleapi.json -d 11p...ev7lc -f csv",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			client, err := downloader.NewClient(&flags)
-			if err != nil {
-				return err
-			}
-			return client.Run()
+			ctx := context.Background()
+			return downloader.NewClient(&flags).Download(ctx)
 		},
 	}
 	cmd.Flags().StringVarP(&flags.Output, "output", "o", "", "Path to save output file (Required)")
 	cmd.Flags().StringVarP(&flags.Credentials, "credentials", "c", "", "A path to the credentails json file issued by Google (Required). More details under help")
-	cmd.Flags().StringVarP(&flags.Scopes, "scopes", "s", "", "The scope(s) applied to the JWT (Required). Apply multiple scopes by space separating them")
 	cmd.Flags().StringVarP(&flags.DocumentId, "document", "d", "", "The document id of the sheet to download (Required). Found in its url, e.g. https://docs.google.com/spreadsheets/d/<document-id>/edit#gid=0")
 	cmd.Flags().StringVarP(&flags.Format, "format", "f", "", "The format of the output, defaults to csv")
 	cmd.MarkFlagRequired("output")
 	cmd.MarkFlagRequired("credentials")
-	cmd.MarkFlagRequired("scopes")
 	cmd.MarkFlagRequired("document")
 	return cmd
 }
