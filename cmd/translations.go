@@ -5,17 +5,9 @@ import (
 	"fmt"
 
 	"github.com/codereaper/lane/internal/downloader"
+	"github.com/codereaper/lane/internal/translations"
 	"github.com/spf13/cobra"
 )
-
-type GenerateConfig struct {
-	input          string
-	kind           string
-	index          int
-	configurations []string
-	defaultIndex   int
-	output         string
-}
 
 func newTranslationsCommand() *cobra.Command {
 	var cmd = &cobra.Command{
@@ -101,7 +93,7 @@ translations.swift:
             static func SOMETHING_WITH_ARGUMENTS(_ p1: String, _ p2: String) -> String { return NSLocalizedString("SOMETHING_WITH_ARGUMENTS", comment: "").replacingOccurrences(of: "%1", with: p1).replacingOccurrences(of: "%2", with: p2) }
     }
 `
-	var config GenerateConfig
+	var flags translations.Flags
 	var cmd = &cobra.Command{
 		Use:   "generate",
 		Short: "Generate translations files from a csv file",
@@ -110,12 +102,12 @@ translations.swift:
 			fmt.Println("generate")
 		},
 	}
-	cmd.Flags().StringVarP(&config.input, "input", "i", "", "Path to a CSV file containing a key row and a row for each language (Required)")
-	cmd.Flags().StringVarP(&config.kind, "type", "t", "", "The type of output to generate, valid options are 'ios' or 'android' (Required)")
-	cmd.Flags().IntVarP(&config.index, "index", "k", 0, "The index of the key row, defaults to 0")
-	cmd.Flags().StringArrayVarP(&config.configurations, "configuration", "c", make([]string, 0), "A configuration string consisting of space separated row index and output path. Multiple configurations can be added, but one is required")
-	cmd.Flags().IntVarP(&config.defaultIndex, "main-index", "m", 0, "Required for ios. The index of the main/default language row")
-	cmd.Flags().StringVarP(&config.output, "output", "o", "", "Required for ios. A path for the generated output")
+	cmd.Flags().StringVarP(&flags.Input, "input", "i", "", "Path to a CSV file containing a key row and a row for each language (Required)")
+	cmd.Flags().StringVarP(&flags.Kind, "type", "t", "", "The type of output to generate, valid options are 'ios' or 'android' (Required)")
+	cmd.Flags().IntVarP(&flags.Index, "index", "k", 0, "The index of the key row, defaults to 0")
+	cmd.Flags().StringArrayVarP(&flags.Configurations, "configuration", "c", make([]string, 0), "A configuration string consisting of space separated row index and output path. Multiple configurations can be added, but one is required")
+	cmd.Flags().IntVarP(&flags.DefaultIndex, "main-index", "m", 0, "Required for ios. The index of the main/default language row, defaults to 0")
+	cmd.Flags().StringVarP(&flags.Output, "output", "o", "", "Required for ios. A path for the generated output")
 	cmd.MarkFlagRequired("input")
 	cmd.MarkFlagRequired("kind")
 	cmd.MarkFlagRequired("configuration")

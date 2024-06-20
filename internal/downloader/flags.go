@@ -33,14 +33,14 @@ func (f *Flags) validate() error {
 	}
 
 	validFormat := false
-	exts := keys(validFormats)
-	for _, v := range exts {
+	keys := keys(validFormats)
+	for _, v := range keys {
 		if !validFormat && v == strings.ToLower(f.Format) {
 			validFormat = true
 		}
 	}
 	if !validFormat {
-		return fmt.Errorf("invalid format: %s. Valid formats are %v", f.Format, exts)
+		return fmt.Errorf("invalid format: %s. Valid formats are %v", f.Format, keys)
 	}
 
 	if _, err := os.Stat(f.Credentials); err != nil {
