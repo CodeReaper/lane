@@ -6,15 +6,15 @@ import (
 	"strings"
 )
 
-type IosLanguageFile struct {
-	file *LanguageFile
+type iosLanguageFile struct {
+	file *languageFile
 }
 
-func (f *IosLanguageFile) Write(translations *Translations) error {
+func (f *iosLanguageFile) Write(translations *translationData) error {
 	return f.file.write(f, translations)
 }
 
-func (f *IosLanguageFile) write(translation *Translation, io io.Writer) error {
+func (f *iosLanguageFile) write(translation *translation, io io.Writer) error {
 	escape := strings.NewReplacer(
 		"\"", "\\\"",
 		"\n", "\\n")

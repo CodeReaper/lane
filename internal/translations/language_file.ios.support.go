@@ -7,15 +7,15 @@ import (
 	"strings"
 )
 
-type IosSupportLanguageFile struct {
-	file *LanguageFile
+type iosSupportLanguageFile struct {
+	file *languageFile
 }
 
-func (f *IosSupportLanguageFile) Write(translations *Translations) error {
+func (f *iosSupportLanguageFile) Write(translations *translationData) error {
 	return f.file.write(f, translations)
 }
 
-func (f *IosSupportLanguageFile) write(translation *Translation, io io.Writer) error {
+func (f *iosSupportLanguageFile) write(translation *translation, io io.Writer) error {
 	regex := regexp.MustCompile(`%([0-9]+)`)
 
 	header := `// swiftlint:disable all

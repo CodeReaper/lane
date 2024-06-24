@@ -7,15 +7,15 @@ import (
 	"strings"
 )
 
-type AndroidLanguageFile struct {
-	file *LanguageFile
+type androidLanguageFile struct {
+	file *languageFile
 }
 
-func (f *AndroidLanguageFile) Write(translations *Translations) error {
+func (f *androidLanguageFile) Write(translations *translationData) error {
 	return f.file.write(f, translations)
 }
 
-func (f *AndroidLanguageFile) write(translation *Translation, io io.Writer) error {
+func (f *androidLanguageFile) write(translation *translation, io io.Writer) error {
 	regex := regexp.MustCompile(`%([0-9]+)`)
 
 	escape := strings.NewReplacer(

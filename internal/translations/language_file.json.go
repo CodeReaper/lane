@@ -6,15 +6,15 @@ import (
 	"strings"
 )
 
-type JsonLanguageFile struct {
-	file *LanguageFile
+type jsonLanguageFile struct {
+	file *languageFile
 }
 
-func (f *JsonLanguageFile) Write(translations *Translations) error {
+func (f *jsonLanguageFile) Write(translations *translationData) error {
 	return f.file.write(f, translations)
 }
 
-func (f *JsonLanguageFile) write(translation *Translation, io io.Writer) error {
+func (f *jsonLanguageFile) write(translation *translation, io io.Writer) error {
 	data := map[string]string{}
 	for _, k := range translation.keys {
 		data[strings.ToLower(k)] = translation.get(k)

@@ -2,7 +2,6 @@ package translations
 
 import (
 	"context"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -53,18 +52,4 @@ func TestIos(t *testing.T) {
 	equalFiles(t, "testdata/ios-en.expected", "../../build/en.strings")
 	equalFiles(t, "testdata/ios-da.expected", "../../build/da.strings")
 	equalFiles(t, "testdata/ios-swift.expected", "../../build/Translations.swift")
-}
-
-func equalFiles(t *testing.T, expectedPath string, actualPath string) bool {
-	expected, err := os.ReadFile(expectedPath)
-	if !assert.Nil(t, err) {
-		return false
-	}
-
-	actual, err := os.ReadFile(actualPath)
-	if !assert.Nil(t, err) {
-		return false
-	}
-
-	return assert.Equal(t, string(expected), string(actual))
 }

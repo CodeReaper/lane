@@ -6,11 +6,11 @@ import (
 	"strings"
 )
 
-type Translations struct {
+type translationData struct {
 	data [][]string
 }
 
-func newTranslations(path string) (*Translations, error) {
+func newTranslations(path string) (*translationData, error) {
 	r, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -27,10 +27,10 @@ func newTranslations(path string) (*Translations, error) {
 	if len(records) > 0 {
 		records = records[1:] // skips header row
 	}
-	return &Translations{data: records}, nil
+	return &translationData{data: records}, nil
 }
 
-func (t *Translations) translation(keyIndex int, valueIndex int) *Translation {
+func (t *translationData) translation(keyIndex int, valueIndex int) *translation {
 	items := map[string]string{}
 	for _, r := range t.data {
 		items[strings.ToLower(r[keyIndex-1])] = r[valueIndex-1]

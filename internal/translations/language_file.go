@@ -9,18 +9,18 @@ import (
 	"strings"
 )
 
-type LanguageFile struct {
+type languageFile struct {
 	path       string
 	keyIndex   int
 	valueIndex int
 }
 
-type LanguageFileWriter interface {
-	write(translation *Translation, io io.Writer) error
-	Write(translations *Translations) error
+type languageFileWriter interface {
+	write(translation *translation, io io.Writer) error
+	Write(translations *translationData) error
 }
 
-func (f *LanguageFile) write(writer LanguageFileWriter, translations *Translations) error {
+func (f *languageFile) write(writer languageFileWriter, translations *translationData) error {
 	translation := translations.translation(f.keyIndex, f.valueIndex)
 
 	tempPath := f.path + ".tmp"
@@ -40,7 +40,7 @@ func (f *LanguageFile) write(writer LanguageFileWriter, translations *Translatio
 	return os.Rename(tempPath, f.path)
 }
 
-func newLanguageFiles(flags *Flags, configurations []string) ([]LanguageFileWriter, error) {
+func newLanguageFiles(flags *Flags, configurations []string) ([]languageFileWriter, error) {
 	if len(configurations) == 0 {
 		return nil, fmt.Errorf("no configurations provided")
 	}
@@ -66,11 +66,11 @@ func newLanguageFiles(flags *Flags, configurations []string) ([]LanguageFileWrit
 	}
 
 	once := true
-	list := make([]LanguageFileWriter, 0)
+	list := make([]languageFileWriter, 0)
 	for path, index := range arguments {
-		var writer LanguageFileWriter
+		var writer languageFileWriter
 
-		file := &LanguageFile{
+		file := &languageFile{
 			path:       path,
 			keyIndex:   flags.KeyIndex,
 			valueIndex: index,
@@ -78,12 +78,12 @@ func newLanguageFiles(flags *Flags, configurations []string) ([]LanguageFileWrit
 
 		switch flags.Kind {
 		case androidKind:
-			writer = &AndroidLanguageFile{file: file}
+			writer = &androidLanguageFile{file: file}
 		case iosKind:
-			writer = &IosLanguageFile{file: file}
+			writer = &iosLanguageFile{file: file}
 			if once {
 				once = false
-				supporter := &IosSupportLanguageFile{file: &LanguageFile{
+				supporter := &iosSupportLanguageFile{file: &languageFile{
 					path:       flags.Output,
 					keyIndex:   flags.KeyIndex,
 					valueIndex: flags.DefaultValueIndex,
@@ -91,7 +91,7 @@ func newLanguageFiles(flags *Flags, configurations []string) ([]LanguageFileWrit
 				list = append(list, supporter)
 			}
 		case jsonKind:
-			writer = &JsonLanguageFile{file: file}
+			writer = &jsonLanguageFile{file: file}
 		default:
 			return nil, fmt.Errorf("found unknown kind: %v", flags.Kind)
 		}
