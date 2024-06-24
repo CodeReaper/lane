@@ -17,43 +17,40 @@ var validationKases = []struct {
 	{
 		"all-empty",
 		Flags{
-			Input:          "",
-			Kind:           "",
-			Index:          0,
-			Configurations: []string{},
-			DefaultIndex:   0,
-			Output:         "",
+			Input:        "",
+			Kind:         "",
+			Index:        0,
+			DefaultIndex: 0,
+			Output:       "",
 		},
 		false,
 	},
 	{
 		"all-set-android",
 		Flags{
-			Input:          "testdata/input.csv",
-			Kind:           "android",
-			Index:          0,
-			Configurations: []string{""},
-			DefaultIndex:   0,
-			Output:         "",
+			Input:        "testdata/input.csv",
+			Kind:         "android",
+			Index:        0,
+			DefaultIndex: 0,
+			Output:       "",
 		},
 		true,
 	},
 	{
 		"all-set-ios",
 		Flags{
-			Input:          "testdata/input.csv",
-			Kind:           "ios",
-			Index:          0,
-			Configurations: []string{""},
-			DefaultIndex:   0,
-			Output:         "",
+			Input:        "testdata/input.csv",
+			Kind:         "ios",
+			Index:        0,
+			DefaultIndex: 0,
+			Output:       "testdata/out.put",
 		},
 		true,
 	},
 	// FIXME: more test cases, and fix confs
 }
 
-func TestConfigValidate(t *testing.T) {
+func TestFlagsValidate(t *testing.T) {
 	for _, kase := range validationKases {
 		t.Run(kase.name, func(t *testing.T) {
 			err := kase.flags.validate()

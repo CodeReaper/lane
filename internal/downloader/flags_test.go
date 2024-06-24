@@ -116,7 +116,7 @@ var validationKases = []struct {
 	},
 }
 
-func TestConfigValidate(t *testing.T) {
+func TestFlagsValidate(t *testing.T) {
 	for _, kase := range validationKases {
 		t.Run(kase.name, func(t *testing.T) {
 			err := kase.flags.validate()

@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/codereaper/lane/internal/downloader"
 	"github.com/codereaper/lane/internal/translations"
@@ -36,8 +35,7 @@ Make sure to share the sheet with the 'client_email' assigned to your service ac
 		Long:    additionalHelp,
 		Example: "  lane translations download -o output.csv -c googleapi.json -d 11p...ev7lc -f csv",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx := context.Background()
-			return downloader.NewClient(&flags).Download(ctx)
+			return downloader.Download(context.Background(), &flags)
 		},
 	}
 	cmd.Flags().StringVarP(&flags.Output, "output", "o", "", "Path to save output file (Required)")
@@ -94,18 +92,19 @@ translations.swift:
     }
 `
 	var flags translations.Flags
+	var configurations []string
 	var cmd = &cobra.Command{
 		Use:   "generate",
 		Short: "Generate translations files from a csv file",
 		Long:  additionalHelp,
-		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("generate")
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return translations.Generate(context.Background(), &flags, configurations)
 		},
 	}
 	cmd.Flags().StringVarP(&flags.Input, "input", "i", "", "Path to a CSV file containing a key row and a row for each language (Required)")
 	cmd.Flags().StringVarP(&flags.Kind, "type", "t", "", "The type of output to generate, valid options are 'ios' or 'android' (Required)")
 	cmd.Flags().IntVarP(&flags.Index, "index", "k", 0, "The index of the key row, defaults to 0")
-	cmd.Flags().StringArrayVarP(&flags.Configurations, "configuration", "c", make([]string, 0), "A configuration string consisting of space separated row index and output path. Multiple configurations can be added, but one is required")
+	cmd.Flags().StringArrayVarP(&configurations, "configuration", "c", make([]string, 0), "A configuration string consisting of space separated row index and output path. Multiple configurations can be added, but one is required")
 	cmd.Flags().IntVarP(&flags.DefaultIndex, "main-index", "m", 0, "Required for ios. The index of the main/default language row, defaults to 0")
 	cmd.Flags().StringVarP(&flags.Output, "output", "o", "", "Required for ios. A path for the generated output")
 	cmd.MarkFlagRequired("input")

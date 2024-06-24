@@ -2,15 +2,11 @@ package translations
 
 import (
 	"context"
-	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"regexp"
-	"sort"
-	"strconv"
 	"strings"
 )
 
@@ -24,113 +20,50 @@ var validKinds = []string{
 	jsonKind,
 }
 
-type Generator struct {
-	flags *Flags
-}
-
-type Configuration struct {
-	index int
-	path  string
-}
-
-func NewGenerator(f *Flags) *Generator {
-	return &Generator{
-		flags: f,
-	}
-}
-
-func (g *Generator) Generate(ctx context.Context) error {
-	if err := g.flags.validate(); err != nil {
-		return err
-	}
-
-	configurations, err := parseConfigurations(g.flags.Configurations)
+func Generate(ctx context.Context, flags *Flags, configurations []string) error {
+	err := flags.validate()
 	if err != nil {
 		return err
 	}
 
-	records, err := loadRecords(g.flags.Input)
+	files, err := newLanguageFiles(flags.Index, configurations)
 	if err != nil {
 		return err
 	}
 
-	for _, c := range configurations {
-		if err := writeFile(g.flags.Kind, makeTranslations(records, g.flags.Index-1, c.index-1), c.path); err != nil {
-			return nil
+	translations, err := newTranslations(flags.Input)
+	if err != nil {
+		return err
+	}
+
+	kind := flags.Kind
+	once := true
+	for _, f := range files {
+		t := translations.translation(f.keyIndex, f.valueIndex)
+
+		switch kind {
+		case androidKind:
+			err = write(toAndroid, t, f.path)
+		case iosKind:
+			err = write(toIos, t, f.path)
+			if once && err == nil {
+				once = false
+				err = write(toSwift, translations.translation(flags.Index, flags.DefaultIndex), flags.Output)
+			}
+		case jsonKind:
+			err = write(toJson, t, f.path)
+		default:
+			err = fmt.Errorf("found unknown kind: %v", kind)
 		}
-	}
-
-	if g.flags.Kind == iosKind {
-		return writeSupportFile(makeTranslations(records, g.flags.Index-1, g.flags.DefaultIndex-1), g.flags.Output)
-	} else {
-		return nil
-	}
-}
-
-func loadRecords(path string) ([][]string, error) {
-	r, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-
-	reader := csv.NewReader(r)
-	reader.Comma = ','
-
-	records, err := reader.ReadAll()
-	if err != nil {
-		return nil, err
-	}
-
-	if len(records) > 0 {
-		records = records[1:] // skips header row
-	}
-	return records, nil
-}
-
-func makeTranslations(records [][]string, keyIndex int, valueIndex int) map[string]string {
-	translations := map[string]string{}
-	for _, r := range records {
-		translations[strings.ToLower(r[keyIndex])] = r[valueIndex]
-	}
-	return translations
-}
-
-func sortedKeys(array map[string]string) []string {
-	keys := make([]string, 0, len(array))
-	for k := range array {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	return keys
-}
-
-func parseConfigurations(configurations []string) ([]Configuration, error) {
-	list := make([]Configuration, 0)
-	for _, configuration := range configurations {
-		fields := strings.Fields(configuration)
-		if len(fields) != 2 {
-			return nil, fmt.Errorf("configuration has invalid format: %s", configuration)
-		}
-
-		index, err := strconv.Atoi(fields[0])
 		if err != nil {
-			return nil, fmt.Errorf("configuration has invalid index: %s", configuration)
+			return err
 		}
-
-		path := fields[1]
-		if _, err := os.Stat(filepath.Dir(path)); err != nil {
-			return nil, fmt.Errorf("configuration has invalid path: %s", configuration)
-		}
-
-		list = append(list, Configuration{
-			index: index,
-			path:  path,
-		})
 	}
-	return list, nil
+
+	return nil
 }
 
-func writeFile(kind string, translations map[string]string, path string) error {
+func write(writerFunc func(translation *Translation, io io.Writer) error, translation *Translation, path string) error {
 	tempPath := path + ".tmp"
 	defer os.Remove(tempPath)
 
@@ -140,16 +73,7 @@ func writeFile(kind string, translations map[string]string, path string) error {
 	}
 	defer tempFile.Close()
 
-	switch kind {
-	case androidKind:
-		err = writeAndroid(translations, tempFile)
-	case iosKind:
-		err = writeIos(translations, tempFile)
-	case jsonKind:
-		err = writeJson(translations, tempFile)
-	default:
-		err = fmt.Errorf("found unknown kind: %v", kind)
-	}
+	err = writerFunc(translation, tempFile)
 	if err != nil {
 		return err
 	}
@@ -157,7 +81,7 @@ func writeFile(kind string, translations map[string]string, path string) error {
 	return os.Rename(tempPath, path)
 }
 
-func writeAndroid(translations map[string]string, io io.Writer) error {
+func toAndroid(translation *Translation, io io.Writer) error {
 	regex := regexp.MustCompile(`%([0-9]+)`)
 
 	escape := strings.NewReplacer(
@@ -173,9 +97,9 @@ func writeAndroid(translations map[string]string, io io.Writer) error {
 		return err
 	}
 
-	for _, k := range sortedKeys(translations) {
+	for _, k := range translation.keys {
 		key := strings.ToLower(k)
-		value := regex.ReplaceAllString(translations[k], "%${1}$$s")
+		value := regex.ReplaceAllString(translation.get(k), "%${1}$$s")
 		_, err = io.Write([]byte(fmt.Sprintf("\t<string name=\"%s\">%s</string>\n", key, escape.Replace(value))))
 		if err != nil {
 			return err
@@ -187,14 +111,14 @@ func writeAndroid(translations map[string]string, io io.Writer) error {
 	return err
 }
 
-func writeIos(translations map[string]string, io io.Writer) error {
+func toIos(translation *Translation, io io.Writer) error {
 	escape := strings.NewReplacer(
 		"\"", "\\\"",
 		"\n", "\\n")
 
-	for _, k := range sortedKeys(translations) {
+	for _, k := range translation.keys {
 		key := strings.ToUpper(k)
-		value := translations[k]
+		value := translation.get(k)
 		_, err := io.Write([]byte(fmt.Sprintf("\"%s\" = \"%s\";\n", key, escape.Replace(value))))
 		if err != nil {
 			return err
@@ -204,10 +128,10 @@ func writeIos(translations map[string]string, io io.Writer) error {
 	return nil
 }
 
-func writeJson(translations map[string]string, io io.Writer) error {
+func toJson(translation *Translation, io io.Writer) error {
 	data := map[string]string{}
-	for k, v := range translations {
-		data[strings.ToLower(k)] = v
+	for _, k := range translation.keys {
+		data[strings.ToLower(k)] = translation.get(k)
 	}
 
 	b, err := json.MarshalIndent(data, "", "  ")
@@ -220,25 +144,7 @@ func writeJson(translations map[string]string, io io.Writer) error {
 	return err
 }
 
-func writeSupportFile(translations map[string]string, path string) error {
-	tempPath := path + ".tmp"
-	defer os.Remove(tempPath)
-
-	tempFile, err := os.Create(tempPath)
-	if err != nil {
-		return err
-	}
-	defer tempFile.Close()
-
-	err = writeSwift(translations, tempFile)
-	if err != nil {
-		return err
-	}
-
-	return os.Rename(tempPath, path)
-}
-
-func writeSwift(translations map[string]string, io io.Writer) error {
+func toSwift(translation *Translation, io io.Writer) error {
 	regex := regexp.MustCompile(`%([0-9]+)`)
 
 	header := `// swiftlint:disable all
@@ -253,9 +159,9 @@ struct Translations {
 		return err
 	}
 
-	for _, k := range sortedKeys(translations) {
+	for _, k := range translation.keys {
 		key := strings.ToUpper(k)
-		value := translations[k]
+		value := translation.get(k)
 
 		var line string
 		matches := regex.FindAllStringSubmatch(value, -1)

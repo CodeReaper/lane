@@ -1,4 +1,5 @@
 .default: test
+.phony: test
 
 clean:
 	@find build -not -name .gitignore -delete
@@ -12,14 +13,25 @@ build-docs: build
 	@mkdir build/docs
 	@build/lane documentation -o build/docs
 
-test-clean: clean
+tidy: clean
 	@go fmt
 	@go mod tidy
 ifeq ($(strip $(CI)),)
-	@git diff --quiet --exit-code || echo 'Workplace is dirty'
+	@git diff --quiet --exit-code || echo 'Warning: Workplace is dirty'
 else
-	@git diff --quiet --exit-code || (echo 'Workplace is dirty'; exit 1)
+	@git diff --quiet --exit-code || (echo 'Error: Workplace is dirty'; exit 1)
 endif
 
-test: test-clean build
+unit-tests:
 	@go test -timeout 10s ./internal/...
+
+TOOL_VERSION = $(shell grep '^golang ' .tool-versions | sed 's/golang //')
+MOD_VERSION = $(shell grep '^go ' go.mod | sed 's/go //')
+verify-version:
+ifneq ($(TOOL_VERSION),$(MOD_VERSION))
+	@echo 'Mismatched go versions'
+	@exit 1
+endif
+	@exit 0
+
+test: verify-version tidy build unit-tests

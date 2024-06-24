@@ -16,27 +16,17 @@ var validFormats = map[string]string{
 	"xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 }
 
-type Client struct {
-	flags *Flags
-}
-
-func NewClient(x *Flags) *Client {
-	return &Client{
-		flags: x,
-	}
-}
-
-func (c *Client) Download(ctx context.Context) error {
-	if err := c.flags.validate(); err != nil {
+func Download(ctx context.Context, flags *Flags) error {
+	if err := flags.validate(); err != nil {
 		return err
 	}
 
-	mimeType, err := lookupMimeType(c.flags.Format)
+	mimeType, err := lookupMimeType(flags.Format)
 	if err != nil {
 		return err
 	}
 
-	keyBytes, err := os.ReadFile(c.flags.Credentials)
+	keyBytes, err := os.ReadFile(flags.Credentials)
 	if err != nil {
 		return err
 	}
@@ -46,12 +36,12 @@ func (c *Client) Download(ctx context.Context) error {
 		return err
 	}
 
-	resp, err := service.download(c.flags.DocumentId, mimeType)
+	resp, err := service.download(flags.DocumentId, mimeType)
 	if err != nil {
 		return err
 	}
 
-	return handleResponse(resp, c.flags.Output)
+	return handleResponse(resp, flags.Output)
 }
 
 func lookupMimeType(format string) (string, error) {

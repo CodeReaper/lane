@@ -8,12 +8,11 @@ import (
 )
 
 type Flags struct {
-	Input          string
-	Kind           string
-	Index          int
-	Configurations []string
-	DefaultIndex   int
-	Output         string
+	Input        string
+	Kind         string
+	Index        int
+	DefaultIndex int
+	Output       string
 }
 
 func (f *Flags) validate() error {
@@ -22,9 +21,6 @@ func (f *Flags) validate() error {
 	}
 	if len(f.Kind) == 0 {
 		return fmt.Errorf("kind not provided")
-	}
-	if len(f.Configurations) == 0 { // FIXME: parse them too
-		return fmt.Errorf("no configurations provided")
 	}
 
 	isIOS := false
