@@ -8,11 +8,11 @@ import (
 )
 
 type Flags struct {
-	Input        string
-	Kind         string
-	Index        int
-	DefaultIndex int
-	Output       string
+	Input             string
+	Kind              string
+	KeyIndex          int
+	DefaultValueIndex int
+	Output            string
 }
 
 func (f *Flags) validate() error {

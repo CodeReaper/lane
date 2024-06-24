@@ -10,9 +10,9 @@ import (
 
 func TestAndroid(t *testing.T) {
 	flags := Flags{
-		Input: "testdata/input.csv",
-		Kind:  "android",
-		Index: 1,
+		Input:    "testdata/input.csv",
+		Kind:     "android",
+		KeyIndex: 1,
 	}
 	configurations := []string{"3 ../../build/en.xml", "4 ../../build/da.xml"}
 
@@ -25,9 +25,9 @@ func TestAndroid(t *testing.T) {
 
 func TestJson(t *testing.T) {
 	flags := Flags{
-		Input: "testdata/input.csv",
-		Kind:  "json",
-		Index: 1,
+		Input:    "testdata/input.csv",
+		Kind:     "json",
+		KeyIndex: 1,
 	}
 	configurations := []string{"3 ../../build/en.json"}
 
@@ -39,11 +39,11 @@ func TestJson(t *testing.T) {
 
 func TestIos(t *testing.T) {
 	flags := Flags{
-		Input:        "testdata/input.csv",
-		Kind:         "ios",
-		Index:        1,
-		DefaultIndex: 3,
-		Output:       "../../build/Translations.swift",
+		Input:             "testdata/input.csv",
+		Kind:              "ios",
+		KeyIndex:          1,
+		DefaultValueIndex: 3,
+		Output:            "../../build/Translations.swift",
 	}
 	configurations := []string{"3 ../../build/en.strings", "4 ../../build/da.strings"}
 
