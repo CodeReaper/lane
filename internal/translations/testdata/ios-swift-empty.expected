@@ -1,0 +1,4 @@
+// swiftlint:disable all
+import Foundation
+struct Translations {
+}

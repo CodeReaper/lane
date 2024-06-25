@@ -23,7 +23,8 @@ else
 endif
 
 unit-tests:
-	@go test -timeout 10s ./internal/...
+	@go test -timeout 10s -coverprofile=build/coverage.out ./internal/...
+	@go tool cover -html=build/coverage.out -o build/coverage.html
 
 TOOL_VERSION = $(shell grep '^golang ' .tool-versions | sed 's/golang //')
 MOD_VERSION = $(shell grep '^go ' go.mod | sed 's/go //')

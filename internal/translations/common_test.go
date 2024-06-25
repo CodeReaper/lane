@@ -9,12 +9,12 @@ import (
 
 func equalFiles(t *testing.T, expectedPath string, actualPath string) bool {
 	expected, err := os.ReadFile(expectedPath)
-	if !assert.Nil(t, err) {
+	if !assert.NoError(t, err) {
 		return false
 	}
 
 	actual, err := os.ReadFile(actualPath)
-	if !assert.Nil(t, err) {
+	if !assert.NoError(t, err) {
 		return false
 	}
 
