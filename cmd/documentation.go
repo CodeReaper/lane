@@ -11,23 +11,7 @@ func newDocumentationCommand(root *cobra.Command) *cobra.Command {
 		Use:    "documentation",
 		Hidden: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			err := doc.GenMarkdownTree(root, output)
-			if err != nil {
-				return err
-			}
-			err = doc.GenReSTTree(root, output)
-			if err != nil {
-				return err
-			}
-			err = doc.GenYamlTree(root, output)
-			if err != nil {
-				return err
-			}
-			err = doc.GenManTree(root, nil, output)
-			if err != nil {
-				return err
-			}
-			return nil
+			return doc.GenMarkdownTree(root, output)
 		},
 	}
 	cmd.Flags().StringVarP(&output, "output", "o", "", "Path to save documentation files (Required)")

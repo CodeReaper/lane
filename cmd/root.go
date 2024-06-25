@@ -22,7 +22,7 @@ func Execute() {
 
 func init() {
 	rootCmd.Version = versionString
+	rootCmd.DisableAutoGenTag = true
 	rootCmd.AddCommand(newDocumentationCommand(rootCmd))
 	rootCmd.AddCommand(newTranslationsCommand())
-	rootCmd.AddCommand(newWorkflowCommand())
 }
