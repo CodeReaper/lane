@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 
-	"golang.org/x/oauth2/google"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
 )
@@ -18,15 +17,8 @@ type GoogleAPIService struct {
 	service *drive.Service
 }
 
-func newService(ctx context.Context, bytes []byte) (Service, error) {
-	config, err := google.JWTConfigFromJSON(bytes, drive.DriveReadonlyScope)
-	if err != nil {
-		return nil, err
-	}
-
-	client := config.Client(ctx)
-
-	drive, err := drive.NewService(ctx, option.WithHTTPClient(client))
+func newService(ctx context.Context, credentials string) (Service, error) {
+	drive, err := drive.NewService(ctx, option.WithCredentialsFile(credentials))
 	if err != nil {
 		return nil, err
 	}

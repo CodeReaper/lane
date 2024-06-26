@@ -2,6 +2,7 @@ package translations
 
 import (
 	"bytes"
+	"context"
 	"os"
 	"testing"
 
@@ -123,4 +124,60 @@ func TestLanguageFileWriteInputFile(t *testing.T) {
 		}
 		assert.EqualValues(t, expected, b.Bytes())
 	}
+}
+
+func TestEscapingSingleColumn(t *testing.T) {
+	output := "<resources>\n\t<string name=\"that\">Another string including a | even.</string>\n\t<string name=\"this\">This is a longer sentence, which includes a comma.</string>\n</resources>\n"
+	outputPath := "../../build/out.csv"
+	inputPath := "../../build/test.csv"
+	err := os.WriteFile("../../build/test.csv", []byte("key,en\nTHIS,\"This is a longer sentence, which includes a comma.\"\nTHAT,Another string including a | even."), 0777)
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	flags := Flags{
+		Input:    inputPath,
+		Kind:     "android",
+		KeyIndex: 1,
+	}
+	configurations := []string{"2 " + outputPath}
+	err = Generate(context.Background(), &flags, configurations)
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	b, err := os.ReadFile(outputPath)
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	assert.Equal(t, output, string(b))
+}
+
+func TestEscapingAllColumns(t *testing.T) {
+	output := "<resources>\n\t<string name=\"that\">Another string including a | even.</string>\n\t<string name=\"this\">This is a longer sentence, which includes a comma.</string>\n</resources>\n"
+	outputPath := "../../build/out.csv"
+	inputPath := "../../build/test.csv"
+	err := os.WriteFile("../../build/test.csv", []byte("\"key\",\"en\"\n\"THIS\",\"This is a longer sentence, which includes a comma.\"\n\"THAT\",\"Another string including a | even.\""), 0777)
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	flags := Flags{
+		Input:    inputPath,
+		Kind:     "android",
+		KeyIndex: 1,
+	}
+	configurations := []string{"2 " + outputPath}
+	err = Generate(context.Background(), &flags, configurations)
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	b, err := os.ReadFile(outputPath)
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	assert.Equal(t, output, string(b))
 }

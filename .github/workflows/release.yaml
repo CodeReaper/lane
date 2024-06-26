@@ -1,7 +1,5 @@
 name: Release
 
-# FIXME: requires updating, and so does the asdf repo
-
 on:
   pull_request: {}
   release:

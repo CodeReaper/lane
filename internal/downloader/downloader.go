@@ -17,21 +17,20 @@ var validFormats = map[string]string{
 }
 
 func Download(ctx context.Context, flags *Flags) error {
+	service, err := newService(ctx, flags.Credentials)
+	if err != nil {
+		return err
+	}
+
+	return download(flags, service)
+}
+
+func download(flags *Flags, service Service) error {
 	if err := flags.validate(); err != nil {
 		return err
 	}
 
 	mimeType, err := lookupMimeType(flags.Format)
-	if err != nil {
-		return err
-	}
-
-	keyBytes, err := os.ReadFile(flags.Credentials)
-	if err != nil {
-		return err
-	}
-
-	service, err := newService(ctx, keyBytes)
 	if err != nil {
 		return err
 	}

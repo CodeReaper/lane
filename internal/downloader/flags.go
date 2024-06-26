@@ -18,10 +18,6 @@ func (f *Flags) validate() error {
 	if len(f.Format) == 0 {
 		f.Format = "csv"
 	}
-
-	if len(f.Format) == 0 {
-		return fmt.Errorf("format not provided")
-	}
 	if len(f.Output) == 0 {
 		return fmt.Errorf("output not provided")
 	}

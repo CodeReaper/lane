@@ -18,5 +18,5 @@ func equalFiles(t *testing.T, expectedPath string, actualPath string) bool {
 		return false
 	}
 
-	return assert.Equal(t, string(expected), string(actual))
+	return assert.Equal(t, expected, actual)
 }
