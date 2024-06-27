@@ -12,6 +12,8 @@ SYNOPSIS
 
 DESCRIPTION
 ```
+    DEPRECATED - FIXME
+
     Constructs JWT generation request for Google APIs and outputs a JWT.
 
     The purpose is to faciliate token generation for other usages of the Google APIs.

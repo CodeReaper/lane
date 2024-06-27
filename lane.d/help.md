@@ -12,6 +12,8 @@ SYNOPSIS
 
 DESCRIPTION
 ```
+    DEPRECATED - the functionality of basically executing a script can be provided by an actual script, make, ant and similiar tools. Use them instead.
+
     `lane` is a task automation helper.
 
     You can organize tasks in lanes. A task is written as a shell script.

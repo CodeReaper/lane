@@ -3,6 +3,7 @@
 OLD_PWD=$(pwd)
 LANED_PWD=$(realpath "${0}.d")
 
+echo 'Warning: lane is deprecated, see help for details' >&2
 trap 'set +x; cd "$OLD_PWD" >/dev/null 2>&1;' 0
 trap 'exit 2' 1 2 3 15
 

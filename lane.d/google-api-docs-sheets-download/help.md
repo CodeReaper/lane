@@ -12,6 +12,8 @@ SYNOPSIS
 
 DESCRIPTION
 ```
+    DEPRECATED - FIXME
+
     Downloads a Sheet from Google Docs.
 ```
 

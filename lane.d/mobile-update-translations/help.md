@@ -13,6 +13,8 @@ SYNOPSIS
 
 DESCRIPTION
 ```
+    DEPRECATED - FIXME
+
     Reads a CSV file and uses configuration strings to generate static resource files for android or ios.
 
     Each translated string can have '%<digit>'-style placeholders, however the number of placeholder for each translated language must be the same.
