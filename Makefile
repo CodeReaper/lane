@@ -11,12 +11,16 @@ clean:
 
 build: clean
 	@go build \
-	-ldflags "-X github.com/codereaper/lane/cmd.versionString=$(VERSION)" \
-	-o build/
+	-trimpath \
+	-ldflags "-s -w -X github.com/codereaper/lane/cmd.versionString=$(VERSION)" \
+	-o build/bin/
 
 build-docs: build
 	@mkdir build/docs
-	@build/lane documentation -o build/docs
+	@build/bin/lane documentation -o build/docs
+
+package: build-docs
+	tar -czvf build/lane-$(VERSION).tar.gz build/bin/
 
 tidy: clean
 	@go fmt
