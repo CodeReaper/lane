@@ -7,7 +7,8 @@ TOOL_VERSION = $(shell grep '^golang ' .tool-versions | sed 's/golang //')
 MOD_VERSION = $(shell grep '^go ' go.mod | sed 's/go //')
 
 clean:
-	@find build -not -name .gitignore -delete
+	@find build -type f ! -name .gitignore -exec rm {} +
+	@find build -type d -mindepth 1 -exec rmdir {} +
 
 build: clean
 	go build \
