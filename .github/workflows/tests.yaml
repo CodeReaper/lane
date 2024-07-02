@@ -66,6 +66,7 @@ jobs:
     name: Tests Succeeded
     needs:
       - unit-tests
+      - documentation-tests
       - editorconfig-check
       - dependabot-validate
       - workflow-validate

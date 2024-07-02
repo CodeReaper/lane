@@ -53,7 +53,7 @@ jobs:
           path: artifacts
 
       - name: Display structure of files
-        run: ls -Rl
+        run: ls -Rlah
 
       - name: Attach files
         if: github.event_name == 'release'
