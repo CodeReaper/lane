@@ -26,46 +26,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Bundle source files
-        run: |
-          mkdir bundle
-          cp -r lane.d bundle/
-          cp LICENSE bundle/LICENSE.txt
-
-      - name: Bundle version-injected-lane
-        run: |
-          VERSION='${{ needs.version.outputs.version }}'
-          printf '#!/bin/sh\nVERSION=''%s''\n' "$VERSION" > bundle/lane
-          tail +2 lane >> bundle/lane
-          chmod +x bundle/lane
-
-      - name: Verify version-injected-lane
-        run: |
-          sh bundle/lane -v | grep -iv unreleased
-          [ $? -eq 0 ] || exit 1
-
-      - name: Package files
-        run: |
-          cd bundle
-          tar -cJf "../lane-${{ needs.version.outputs.version }}.tar.xz" *
-
-      - name: Calculate checksums
-        run: |
-          for file in ./lane-*.tar.xz; do
-            [ -f "$file" ] || continue
-            sha512sum "$file" > "$file.sha512sum"
-          done
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: make package VERSION='${{ needs.version.outputs.version }}'
+        shell: bash
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: release-artifacts
-          path: lane-*.tar.*
+          path: build/lane-*.tar.*
+          if-no-files-found: error
 
   create-release:
     name: Create Release
-    needs: [version, create-artifacts]
+    needs:
+      - version
+      - create-artifacts
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
