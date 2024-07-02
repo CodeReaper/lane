@@ -13,7 +13,7 @@ SYNOPSIS
 
 DESCRIPTION
 ```
-    DEPRECATED - FIXME
+    DEPRECATED - in version 1.0.0 this action is available as 'lane translations generate [OPTIONS]'
 
     Reads a CSV file and uses configuration strings to generate static resource files for android or ios.
 

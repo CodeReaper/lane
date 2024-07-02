@@ -12,7 +12,7 @@ SYNOPSIS
 
 DESCRIPTION
 ```
-    DEPRECATED - This basically wraps a few lines of shell commands with almost no complexity. Use them directly.
+    DEPRECATED - this action basically wraps a few lines of shell commands with almost no complexity. Use them directly.
 
     Compares two semver-style versions.
     The exit code will indicate if the current version is considered higher than the main version.

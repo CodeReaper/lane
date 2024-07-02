@@ -12,7 +12,7 @@ SYNOPSIS
 
 DESCRIPTION
 ```
-    DEPRECATED - FIXME
+    DEPRECATED - this functionality will be built into 'lane translations download [OPTIONS]' in version 1.0.0.
 
     Constructs JWT generation request for Google APIs and outputs a JWT.
 
@@ -40,4 +40,4 @@ Authentication happens using a specially created .p12 file issued by Google whic
 
 You get this .p12 key by creating a "Service Account Key", which if you do not have a service account, requires you to first create a service account.
 
-Creating both an account and a key is explaining here: https://developers.google.com/identity/protocols/oauth2/service-account#creatinganaccount
+Creating both an account and a key is explained here: https://developers.google.com/identity/protocols/oauth2/service-account#creatinganaccount
