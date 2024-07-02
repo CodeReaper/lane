@@ -12,4 +12,3 @@ OPTIONS
     -p
         A path to the .p12 file issued by Google. See authentication section in the full help.
 ```
-

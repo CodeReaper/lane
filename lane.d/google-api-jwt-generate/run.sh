@@ -28,6 +28,7 @@ if [ ! -f "$p12" ]; then
   exit 4
 fi
 
+echo 'Warning: this action is deprecated, see help for details' >&2
 DIR=$(mktemp -dq)
 
 trap 'set +x; rm -fr $DIR >/dev/null 2>&1' 0

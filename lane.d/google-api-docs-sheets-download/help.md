@@ -12,6 +12,8 @@ SYNOPSIS
 
 DESCRIPTION
 ```
+    DEPRECATED - in version 1.0.0 this action is available as 'lane translations download [OPTIONS]', but will require a JSON type service account key.
+
     Downloads a Sheet from Google Docs.
 ```
 

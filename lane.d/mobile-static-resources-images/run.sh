@@ -24,6 +24,7 @@ fi
 parent=$(dirname "$output")
 mkdir -p "$parent" 2>/dev/null
 
+echo 'Warning: this action is deprecated, see help for details' >&2
 {
   echo '// swiftlint:disable all'
   echo 'import UIKit'

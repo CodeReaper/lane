@@ -28,6 +28,7 @@ if [ ! -f "$file" ]; then
   exit 111
 fi
 
+echo 'Warning: this action is deprecated, see help for details' >&2
 DIR=$(mktemp -dq)
 
 trap 'set +x; rm -fr $DIR >/dev/null 2>&1' 0

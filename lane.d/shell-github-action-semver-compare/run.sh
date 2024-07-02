@@ -29,6 +29,7 @@ fi
   exit 10
 }
 
+echo 'Warning: this action is deprecated, see help for details' >&2
 verify=$(printf '%s\n%s' "$main" "$current" | sort -t '.' -k 1,1 -k 2,2 -k 3,3 -k 4,4 -k 5,5 -g | tail -n1)
 [ "$main" = "$verify" ] && {
   echo 'Version must be greater than version on main.'

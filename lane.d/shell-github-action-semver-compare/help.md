@@ -12,6 +12,8 @@ SYNOPSIS
 
 DESCRIPTION
 ```
+    DEPRECATED - this action basically wraps a few lines of shell commands with almost no complexity. Use them directly.
+
     Compares two semver-style versions.
     The exit code will indicate if the current version is considered higher than the main version.
     The output includes a GitHub-Action-style group text for easier debugging, and an error message when exit code > 0.
