@@ -15,6 +15,17 @@ jobs:
           go-version-file: go.mod
       - run: make test
 
+  documentation-tests:
+    name: Documentation tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: make update-docs
+      - run: set -e; git diff --quiet --exit-code
+
   editorconfig-check:
     name: Editorconfig check
     runs-on: ubuntu-latest
@@ -58,19 +69,3 @@ jobs:
     steps:
       - name: All clear
         run: exit 0
-
-  auto-merge-dependabot:
-    name: Automerge Dependabot PR
-    needs:
-      - tests-succeeded
-    runs-on: ubuntu-latest
-    if: ${{ github.actor == 'dependabot[bot]' && github.event_name == 'pull_request' }}
-    permissions:
-      pull-requests: write
-      contents: write
-    steps:
-      - name: Enable auto-merge for Dependabot PRs
-        run: gh pr merge --auto --squash "$PR_URL"
-        env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ github.token }}

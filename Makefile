@@ -15,9 +15,9 @@ build: clean
 	-ldflags "-s -w -X github.com/codereaper/lane/cmd.versionString=$(VERSION)" \
 	-o build/bin/
 
-build-docs: build
-	@mkdir build/docs
-	@build/bin/lane documentation -o build/docs
+update-docs: build
+	@mkdir -p docs/generated
+	@build/bin/lane documentation -o docs/generated
 
 package: build-docs
 	tar -czvf build/lane-$(VERSION).tar.gz build/bin/
