@@ -3,6 +3,7 @@
 
 CI = $(shell env | grep ^CI=)
 VERSION = 0.0.0
+SUFFIX =
 TOOL_VERSION = $(shell grep '^golang ' .tool-versions | sed 's/golang //')
 MOD_VERSION = $(shell grep '^go ' go.mod | sed 's/go //')
 
@@ -21,8 +22,8 @@ update-docs: build
 	build/bin/lane documentation -o docs/generated
 
 package: build
-	tar -cJvf build/lane-$(VERSION).tar.xz build/bin/
-	cd build && sha512sum lane-$(VERSION).tar.xz > lane-$(VERSION).tar.xz.sha512sum
+	tar -cJvf build/lane-$(VERSION)$(SUFFIX).tar.xz build/bin/
+	cd build && sha512sum lane-$(VERSION)$(SUFFIX).tar.xz > lane-$(VERSION)$(SUFFIX).tar.xz.sha512sum
 
 tidy: clean
 	go fmt

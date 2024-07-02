@@ -15,6 +15,12 @@ jobs:
           go-version-file: go.mod
       - run: make test
         shell: bash
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-artifacts
+          path: build/coverage.*
+          if-no-files-found: error
 
   documentation-tests:
     name: Documentation tests
