@@ -24,58 +24,49 @@ jobs:
     name: Create Artifacts
     needs: version
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - {GOOS: linux, GOARCH: amd64}
+          - {GOOS: linux, GOARCH: arm, GOARM: 6}
+          - {GOOS: linux, GOARCH: arm64}
+          - {GOOS: darwin, GOARCH: amd64}
+          - {GOOS: darwin, GOARCH: arm64}
+          - {GOOS: freebsd, GOARCH: amd64}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Bundle source files
-        run: |
-          mkdir bundle
-          cp -r lane.d bundle/
-          cp LICENSE bundle/LICENSE.txt
-
-      - name: Bundle version-injected-lane
-        run: |
-          VERSION='${{ needs.version.outputs.version }}'
-          printf '#!/bin/sh\nVERSION=''%s''\n' "$VERSION" > bundle/lane
-          tail +2 lane >> bundle/lane
-          chmod +x bundle/lane
-
-      - name: Verify version-injected-lane
-        run: |
-          sh bundle/lane -v | grep -iv unreleased
-          [ $? -eq 0 ] || exit 1
-
-      - name: Package files
-        run: |
-          cd bundle
-          tar -cJf "../lane-${{ needs.version.outputs.version }}.tar.xz" *
-
-      - name: Calculate checksums
-        run: |
-          for file in ./lane-*.tar.xz; do
-            [ -f "$file" ] || continue
-            sha512sum "$file" > "$file.sha512sum"
-          done
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: make package VERSION='${{ needs.version.outputs.version }}' SUFFIX='-${{ matrix.GOOS }}-${{ matrix.GOARCH }}'
+        shell: bash
+        env:
+          GOOS: ${{ matrix.GOOS }}
+          GOARCH: ${{ matrix.GOARCH }}
+          GOARM: ${{ matrix.GOARM }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: release-artifacts
-          path: lane-*.tar.*
+          name: release-artifacts-${{ matrix.GOOS }}-${{ matrix.GOARCH }}
+          path: build/lane-*.tar.*
+          if-no-files-found: error
 
   create-release:
     name: Create Release
-    needs: [version, create-artifacts]
+    needs:
+      - version
+      - create-artifacts
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          name: release-artifacts
+          merge-multiple: true
           path: artifacts
 
       - name: Display structure of files
-        run: ls -Rl
+        run: ls -Rlah
 
       - name: Attach files
         if: github.event_name == 'release'
