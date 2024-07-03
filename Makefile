@@ -23,7 +23,7 @@ update-docs: build
 	build/bin/lane documentation -o docs/generated
 
 package: build
-	tar -cJvf build/lane-$(VERSION)$(SUFFIX).tar.xz build/bin/
+	cd build/bin && tar -cJvf ../lane-$(VERSION)$(SUFFIX).tar.xz *
 	cd build && sha512sum lane-$(VERSION)$(SUFFIX).tar.xz > lane-$(VERSION)$(SUFFIX).tar.xz.sha512sum
 
 tidy: clean
