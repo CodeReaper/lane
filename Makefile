@@ -16,6 +16,7 @@ build: clean
 	-trimpath \
 	-ldflags "-s -w -X github.com/codereaper/lane/cmd.versionString=$(VERSION)" \
 	-o build/bin/
+	cp LICENSE build/bin/LICENSE.txt
 
 update-docs: build
 	@mkdir -p docs/generated

@@ -14,7 +14,7 @@ A lane plugin to install has been set up at [asdf-lane](https://github.com/CodeR
 
 Alternatively this tool can be run directly:
 ```go
-go run github.com/codereaper/lane@v1.0.0
+go run github.com/codereaper/lane@1.0.0
 ```
 
 ## Completion
