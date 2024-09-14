@@ -73,7 +73,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: grep -RHin $(printf Zml4bWUK | base64 -d) . || exit 1 # had to hide the `f i x m e` inside of base64 to not trigger it here too
+      - run: grep -RHin $(printf Zml4bWUK | base64 -d) . && exit 1 || exit 0 # had to hide the `f i x m e` inside of base64 to not trigger it here too
 
   tests-succeeded:
     name: Tests Succeeded
