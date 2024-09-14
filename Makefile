@@ -1,6 +1,3 @@
-.default: test
-.phony: test
-
 CI = $(shell env | grep ^CI=)
 VERSION = 0.0.0
 SUFFIX =

@@ -68,6 +68,13 @@ jobs:
         run: find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \) | xargs -I {} action-validator --verbose {}
         shell: bash
 
+  fixme-check:
+    name: No FIXMEs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -RHin fixme . && exit 1
+
   tests-succeeded:
     name: Tests Succeeded
     needs:
@@ -76,6 +83,7 @@ jobs:
       - editorconfig-check
       - dependabot-validate
       - workflow-validate
+      - fixme-check
 
     runs-on: ubuntu-latest
     steps:
