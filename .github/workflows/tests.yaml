@@ -68,6 +68,13 @@ jobs:
         run: find .github/workflows -type f \( -iname \*.yaml -o -iname \*.yml \) | xargs -I {} action-validator --verbose {}
         shell: bash
 
+  wip-check:
+    name: No 'fix me's check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -RHin $(printf Zml4bWUK | base64 -d) . && exit 1 || exit 0 # had to hide the `f i x m e` inside of base64 to not trigger it here too
+
   tests-succeeded:
     name: Tests Succeeded
     needs:
@@ -76,6 +83,7 @@ jobs:
       - editorconfig-check
       - dependabot-validate
       - workflow-validate
+      - wip-check
 
     runs-on: ubuntu-latest
     steps:
