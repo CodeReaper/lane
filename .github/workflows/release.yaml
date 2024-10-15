@@ -53,7 +53,7 @@ jobs:
           if-no-files-found: error
 
   create-containerized-release:
-    name: Create containerized release
+    name: Create Containerized Release
     needs:
       - version
     runs-on: ubuntu-latest
@@ -85,7 +85,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
   upload-artifacts:
-    name: Create release
+    name: Create Release
     needs:
       - version
       - create-artifacts
