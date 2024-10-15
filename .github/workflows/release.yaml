@@ -59,7 +59,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: docker/metadata-action@v4
+      - uses: docker/metadata-action@v5
         id: meta
         with:
           images: ghcr.io/codereaper/lane
@@ -80,6 +80,7 @@ jobs:
           context: .
           platforms: linux/arm64,linux/amd64
           push: ${{ github.event_name == 'release' && 'true' || 'false' }}
+          load: ${{ github.event_name == 'release' && 'false' || 'true' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
