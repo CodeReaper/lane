@@ -17,6 +17,13 @@ Alternatively this tool can be run directly:
 go run github.com/codereaper/lane@1.0.0
 ```
 
+## Containerized
+
+You can run lane using docker by running:
+```sh
+docker run -it --rm ghcr.io/codereaper/lane
+```
+
 ## Completion
 
 You can set up auto completion by adding the following to your dot rc file:
