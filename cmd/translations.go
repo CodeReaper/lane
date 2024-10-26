@@ -49,7 +49,9 @@ Make sure to share the sheet with the 'client_email' assigned to your service ac
 }
 
 func newTranslationsGenerateCommand() *cobra.Command {
-	var additionalHelp = `Reads a CSV file and uses configuration strings to generate static resource files for android or ios.
+	var additionalHelp = `Reads a CSV file and uses configuration strings to generate static resource files for android and ios.
+
+JSON output is also supported as simple output, the placeholders discussed below do not apply to JSON output.
 
 Each translated string can have '%<digit>'-style placeholders, however the number of placeholder for each translated language must be the same.
 The placeholders in the generated output will always take a string as input.
@@ -102,11 +104,11 @@ translations.swift:
 		},
 	}
 	cmd.Flags().StringVarP(&flags.Input, "input", "i", "", "Path to a CSV file containing a key row and a row for each language (Required)")
-	cmd.Flags().StringVarP(&flags.Kind, "type", "t", "", "The type of output to generate, valid options are 'ios' or 'android' (Required)")
-	cmd.Flags().IntVarP(&flags.KeyIndex, "index", "k", 0, "The index of the key row, defaults to 0")
+	cmd.Flags().StringVarP(&flags.Kind, "type", "t", "", "The type of output to generate, valid options are 'ios', 'android' or 'json' (Required)")
+	cmd.Flags().IntVarP(&flags.KeyIndex, "index", "k", 0, "The index of the key row (Required)")
 	cmd.Flags().StringArrayVarP(&configurations, "configuration", "c", make([]string, 0), "A configuration string consisting of space separated row index and output path. Multiple configurations can be added, but one is required")
-	cmd.Flags().IntVarP(&flags.DefaultValueIndex, "main-index", "m", 0, "Required for ios or when using fill-in. The index of the main/default language row, defaults to 0")
-	cmd.Flags().StringVarP(&flags.Output, "output", "o", "", "Required for ios. A path for the generated output")
+	cmd.Flags().IntVarP(&flags.DefaultValueIndex, "main-index", "m", 0, "Required by type ios and by option fill-in. The index of the main/default language row")
+	cmd.Flags().StringVarP(&flags.Output, "output", "o", "", "Required for type ios. A path for the generated output")
 	cmd.Flags().BoolVarP(&flags.FillIn, "fill-in", "l", false, "Fill in the value from the main/default language if a value is missing for the current language")
 	cmd.MarkFlagRequired("input")
 	cmd.MarkFlagRequired("kind")

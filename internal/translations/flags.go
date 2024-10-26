@@ -23,6 +23,9 @@ func (f *Flags) validate() error {
 	if len(f.Kind) == 0 {
 		return fmt.Errorf("kind not provided")
 	}
+	if f.KeyIndex <= 0 {
+		return fmt.Errorf("index not provided")
+	}
 
 	isIOS := false
 
@@ -47,6 +50,12 @@ func (f *Flags) validate() error {
 		}
 		if _, err := os.Stat(filepath.Dir(f.Output)); err != nil {
 			return err
+		}
+	}
+
+	if isIOS || f.FillIn {
+		if f.DefaultValueIndex <= 0 {
+			return fmt.Errorf("main index not provided")
 		}
 	}
 
