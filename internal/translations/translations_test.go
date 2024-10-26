@@ -27,7 +27,7 @@ func TestTranslationsTranslation(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	translation := translations.translation(1, 3)
+	translation := translations.translation(1, 3, false, 0)
 
 	assert.NotNil(t, translation)
 }

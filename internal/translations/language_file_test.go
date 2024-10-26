@@ -112,7 +112,7 @@ func TestLanguageFileWriteInputFile(t *testing.T) {
 	}
 
 	for _, x := range inputWriters {
-		tr := translations.translation(1, x.index)
+		tr := translations.translation(1, x.index, false, 0)
 		var b bytes.Buffer
 
 		err := x.writer.write(tr, &b)

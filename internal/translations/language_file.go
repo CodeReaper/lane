@@ -10,9 +10,11 @@ import (
 )
 
 type languageFile struct {
-	path       string
-	keyIndex   int
-	valueIndex int
+	path          string
+	keyIndex      int
+	valueIndex    int
+	useFallback   bool
+	fallbackIndex int
 }
 
 type languageFileWriter interface {
@@ -21,7 +23,7 @@ type languageFileWriter interface {
 }
 
 func (f *languageFile) write(writer languageFileWriter, translations *translationData) error {
-	translation := translations.translation(f.keyIndex, f.valueIndex)
+	translation := translations.translation(f.keyIndex, f.valueIndex, f.useFallback, f.fallbackIndex)
 
 	tempPath := f.path + ".tmp"
 	defer os.Remove(tempPath)
@@ -65,15 +67,16 @@ func newLanguageFiles(flags *Flags, configurations []string) ([]languageFileWrit
 		arguments[path] = index
 	}
 
-	once := true
 	list := make([]languageFileWriter, 0)
 	for path, index := range arguments {
 		var writer languageFileWriter
 
 		file := &languageFile{
-			path:       path,
-			keyIndex:   flags.KeyIndex,
-			valueIndex: index,
+			path:          path,
+			keyIndex:      flags.KeyIndex,
+			valueIndex:    index,
+			useFallback:   flags.FillIn,
+			fallbackIndex: flags.DefaultValueIndex,
 		}
 
 		switch flags.Kind {
@@ -81,15 +84,6 @@ func newLanguageFiles(flags *Flags, configurations []string) ([]languageFileWrit
 			writer = &androidLanguageFile{file: file}
 		case iosKind:
 			writer = &iosLanguageFile{file: file}
-			if once {
-				once = false
-				supporter := &iosSupportLanguageFile{file: &languageFile{
-					path:       flags.Output,
-					keyIndex:   flags.KeyIndex,
-					valueIndex: flags.DefaultValueIndex,
-				}}
-				list = append(list, supporter)
-			}
 		case jsonKind:
 			writer = &jsonLanguageFile{file: file}
 		default:
@@ -97,6 +91,17 @@ func newLanguageFiles(flags *Flags, configurations []string) ([]languageFileWrit
 		}
 
 		list = append(list, writer)
+	}
+
+	switch flags.Kind {
+	case iosKind:
+		supporter := &iosSupportLanguageFile{file: &languageFile{
+			path:        flags.Output,
+			keyIndex:    flags.KeyIndex,
+			valueIndex:  flags.DefaultValueIndex,
+			useFallback: false,
+		}}
+		list = append(list, supporter)
 	}
 
 	return list, nil
