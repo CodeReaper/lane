@@ -106,3 +106,68 @@ func TestIosWithFillIn(t *testing.T) {
 	equalFiles(t, "testdata/fill-in/ios-da.expected", "../../build/da.strings")
 	equalFiles(t, "testdata/fill-in/ios-swift.expected", "../../build/Translations.swift")
 }
+
+func TestInvalidConfigurationIndex(t *testing.T) {
+	flags := Flags{
+		Input:    "testdata/input.csv",
+		Kind:     "json",
+		KeyIndex: 1,
+	}
+	configurations := []string{"0 ../../build/en.json"}
+
+	err := Generate(context.Background(), &flags, configurations)
+
+	assert.NotNil(t, err)
+}
+
+var configurationCases = []struct {
+	name           string
+	configurations []string
+	passes         bool
+}{
+	{
+		"none-set",
+		make([]string, 0),
+		false,
+	},
+	{
+		"invalid-index",
+		[]string{"0 ../../build/en.json"},
+		false,
+	},
+	{
+		"missing-index",
+		[]string{"0 ../../build/en.json"},
+		false,
+	},
+	{
+		"missing-path",
+		[]string{"0"},
+		false,
+	},
+	{
+		"all-good",
+		[]string{"1 ../../build/en.json"},
+		true,
+	},
+}
+
+func TestConfigurationCases(t *testing.T) {
+	flags := Flags{
+		Input:    "testdata/input.csv",
+		Kind:     "json",
+		KeyIndex: 1,
+	}
+
+	for _, c := range configurationCases {
+		t.Run(c.name, func(t *testing.T) {
+			err := Generate(context.Background(), &flags, c.configurations)
+			if c.passes && err != nil {
+				t.Errorf("expected to pass, but got %v", err)
+			}
+			if !c.passes && err == nil {
+				t.Errorf("expected to fail, but got %v", err)
+			}
+		})
+	}
+}

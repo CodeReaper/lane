@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-var validationKases = []struct {
+var validationCases = []struct {
 	name   string
 	flags  Flags
 	passes bool
@@ -153,10 +153,56 @@ var validationKases = []struct {
 		},
 		true,
 	},
+	{
+		"all-set-json",
+		Flags{
+			Input:    "testdata/input.csv",
+			Kind:     "json",
+			KeyIndex: 1,
+		},
+		true,
+	},
+	{
+		"all-set-json-missing-input",
+		Flags{
+			Kind:     "json",
+			KeyIndex: 1,
+		},
+		false,
+	},
+	{
+		"all-set-json-missing-key",
+		Flags{
+			Input: "testdata/input.csv",
+			Kind:  "json",
+		},
+		false,
+	},
+	{
+		"json-with-fill-in-without-main-index",
+		Flags{
+			Input:    "testdata/input.csv",
+			Kind:     "json",
+			KeyIndex: 1,
+			FillIn:   true,
+		},
+		false,
+	},
+	{
+		"json-with-fill-in-and-main-index",
+		Flags{
+			Input:             "testdata/input.csv",
+			Kind:              "json",
+			KeyIndex:          1,
+			DefaultValueIndex: 1,
+			FillIn:            true,
+		},
+		true,
+	},
 }
 
 func TestFlagsValidate(t *testing.T) {
-	for _, kase := range validationKases {
+	for _, kase := range validationCases {
 		t.Run(kase.name, func(t *testing.T) {
 			err := kase.flags.validate()
 			if kase.passes && err != nil {
