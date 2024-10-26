@@ -1,0 +1,15 @@
+// swiftlint:disable all
+import Foundation
+struct Texts {
+	static var bundle = Bundle.main
+{{- range . }}
+{{- if .Arguments }}
+	static func {{ .Name }}({{ .Arguments }}) -> String {
+		return NSLocalizedString("{{ .Name }}", bundle: bundle, comment: "{{ .Name }}")
+			{{ .Replacements }}
+	}
+{{- else }}
+	static let {{ .Name }} = NSLocalizedString("{{ .Name }}", bundle: bundle, comment: "{{ .Name }}")
+{{- end }}
+{{- end }}
+}

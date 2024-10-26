@@ -92,6 +92,22 @@ translations.swift:
             static let SOMETHING = NSLocalizedString("SOMETHING", comment: "")
             static func SOMETHING_WITH_ARGUMENTS(_ p1: String, _ p2: String) -> String { return NSLocalizedString("SOMETHING_WITH_ARGUMENTS", comment: "").replacingOccurrences(of: "%1", with: p1).replacingOccurrences(of: "%2", with: p2) }
     }
+
+You can support your own golang text template to change the output, the above output is generated with the following default template:
+
+	// swiftlint:disable all
+	import Foundation
+	public struct Translations {
+	{{- range . }}
+	{{- if .Arguments }}
+		static func {{ .Name }}({{ .Arguments }}) -> String { return NSLocalizedString("{{ .Name }}", comment: ""){{ .Replacements }} }
+	{{- else }}
+		static let {{ .Name }} = NSLocalizedString("{{ .Name }}", comment: "")
+	{{- end }}
+	{{- end }}
+	}
+
+
 `
 	var flags translations.Flags
 	var configurations []string
@@ -109,6 +125,7 @@ translations.swift:
 	cmd.Flags().StringArrayVarP(&configurations, "configuration", "c", make([]string, 0), "A configuration string consisting of space separated row index and output path. Multiple configurations can be added, but one is required")
 	cmd.Flags().IntVarP(&flags.DefaultValueIndex, "main-index", "m", 0, "Required by type ios and by option fill-in. The index of the main/default language row")
 	cmd.Flags().StringVarP(&flags.Output, "output", "o", "", "Required for type ios. A path for the generated output")
+	cmd.Flags().StringVarP(&flags.Template, "template", "p", "", "Only for type ios and optional. A path for the template to generate from")
 	cmd.Flags().BoolVarP(&flags.FillIn, "fill-in", "l", false, "Fill in the value from the main/default language if a value is missing for the current language")
 	cmd.MarkFlagRequired("input")
 	cmd.MarkFlagRequired("kind")
