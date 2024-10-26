@@ -95,12 +95,25 @@ func newLanguageFiles(flags *Flags, configurations []string) ([]languageFileWrit
 
 	switch flags.Kind {
 	case iosKind:
-		supporter := &iosSupportLanguageFile{file: &languageFile{
-			path:        flags.Output,
-			keyIndex:    flags.KeyIndex,
-			valueIndex:  flags.DefaultValueIndex,
-			useFallback: false,
-		}}
+		var template string
+
+		if len(flags.Template) > 0 {
+			buf, err := os.ReadFile(flags.Template)
+			if err != nil {
+				return nil, err
+			}
+			template = string(buf)
+		}
+
+		supporter := &iosSupportLanguageFile{
+			file: &languageFile{
+				path:        flags.Output,
+				keyIndex:    flags.KeyIndex,
+				valueIndex:  flags.DefaultValueIndex,
+				useFallback: false,
+			},
+			template: template,
+		}
 		list = append(list, supporter)
 	}
 

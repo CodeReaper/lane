@@ -171,3 +171,36 @@ func TestConfigurationCases(t *testing.T) {
 		})
 	}
 }
+
+func TestTemplatedIos(t *testing.T) {
+	flags := Flags{
+		Input:             "testdata/templated-ios-support/input.csv",
+		Kind:              "ios",
+		KeyIndex:          1,
+		DefaultValueIndex: 2,
+		Output:            "../../build/Translations.swift",
+		Template:          "testdata/templated-ios-support/file.tmpl",
+	}
+	configurations := []string{"2 ../../build/en.strings"}
+
+	err := Generate(context.Background(), &flags, configurations)
+
+	assert.Nil(t, err)
+	equalFiles(t, "testdata/templated-ios-support/ios-swift.expected", "../../build/Translations.swift")
+}
+
+func TestInvalidTemplate(t *testing.T) {
+	flags := Flags{
+		Input:             "testdata/templated-ios-support/input.csv",
+		Kind:              "ios",
+		KeyIndex:          1,
+		DefaultValueIndex: 2,
+		Output:            "../../build/Translations.swift",
+		Template:          "testdata/templated-ios-support/invalid.tmpl",
+	}
+	configurations := []string{"2 ../../build/en.strings"}
+
+	err := Generate(context.Background(), &flags, configurations)
+
+	assert.NotNil(t, err)
+}

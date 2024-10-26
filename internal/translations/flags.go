@@ -14,6 +14,7 @@ type Flags struct {
 	DefaultValueIndex int
 	Output            string
 	FillIn            bool
+	Template          string
 }
 
 func (f *Flags) validate() error {
@@ -42,6 +43,12 @@ func (f *Flags) validate() error {
 
 	if _, err := os.Stat(f.Input); err != nil {
 		return err
+	}
+
+	if len(f.Template) > 0 {
+		if _, err := os.Stat(f.Template); err != nil {
+			return err
+		}
 	}
 
 	if isIOS {

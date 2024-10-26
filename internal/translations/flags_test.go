@@ -199,6 +199,32 @@ var validationCases = []struct {
 		},
 		true,
 	},
+	{
+		"ios-with-template-valid",
+		Flags{
+			Input:             "testdata/input.csv",
+			Kind:              "ios",
+			KeyIndex:          1,
+			DefaultValueIndex: 1,
+			Output:            "testdata/out.put",
+			FillIn:            true,
+			Template:          "testdata/templated-ios-support/file.tmpl",
+		},
+		true,
+	},
+	{
+		"ios-with-template-invalid",
+		Flags{
+			Input:             "testdata/input.csv",
+			Kind:              "ios",
+			KeyIndex:          1,
+			DefaultValueIndex: 1,
+			Output:            "testdata/out.put",
+			FillIn:            true,
+			Template:          "does/not/exist.file",
+		},
+		false,
+	},
 }
 
 func TestFlagsValidate(t *testing.T) {

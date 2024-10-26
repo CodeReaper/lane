@@ -1,6 +1,6 @@
 // swiftlint:disable all
 import Foundation
-struct Translations {
+public struct Translations {
 	static let SOMETHING = NSLocalizedString("SOMETHING", comment: "")
 	static let SOMETHING_ESCAPED = NSLocalizedString("SOMETHING_ESCAPED", comment: "")
 	static let SOMETHING_FOR_XML = NSLocalizedString("SOMETHING_FOR_XML", comment: "")

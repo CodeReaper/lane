@@ -1,0 +1,10 @@
+// swiftlint:disable all
+import Foundation
+struct Texts {
+	static var bundle = Bundle.main
+	static let SOMETHING = NSLocalizedString("SOMETHING", bundle: bundle, comment: "SOMETHING")
+	static func SOMETHING_WITH_ARGUMENTS(_ p1: String, _ p2: String) -> String {
+		return NSLocalizedString("SOMETHING_WITH_ARGUMENTS", bundle: bundle, comment: "SOMETHING_WITH_ARGUMENTS")
+			.replacingOccurrences(of: "%1", with: p1).replacingOccurrences(of: "%2", with: p2)
+	}
+}
