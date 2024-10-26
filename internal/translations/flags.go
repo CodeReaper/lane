@@ -13,6 +13,7 @@ type Flags struct {
 	KeyIndex          int
 	DefaultValueIndex int
 	Output            string
+	FillIn            bool
 }
 
 func (f *Flags) validate() error {

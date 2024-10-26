@@ -1,0 +1,6 @@
+// swiftlint:disable all
+import Foundation
+struct Translations {
+	static let SOMETHING = NSLocalizedString("SOMETHING", comment: "")
+	static let SOMETHING_ONLY_IN_EN = NSLocalizedString("SOMETHING_ONLY_IN_EN", comment: "")
+}
