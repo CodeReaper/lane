@@ -48,6 +48,22 @@ translations.swift:
             static func SOMETHING_WITH_ARGUMENTS(_ p1: String, _ p2: String) -> String { return NSLocalizedString("SOMETHING_WITH_ARGUMENTS", comment: "").replacingOccurrences(of: "%1", with: p1).replacingOccurrences(of: "%2", with: p2) }
     }
 
+You can support your own golang text template to change the output, the above output is generated with the following default template:
+
+	// swiftlint:disable all
+	import Foundation
+	public struct Translations {
+	{{- range . }}
+	{{- if .Arguments }}
+		static func {{ .Name }}({{ .Arguments }}) -> String { return NSLocalizedString("{{ .Name }}", comment: ""){{ .Replacements }} }
+	{{- else }}
+		static let {{ .Name }} = NSLocalizedString("{{ .Name }}", comment: "")
+	{{- end }}
+	{{- end }}
+	}
+
+
+
 
 ```
 lane translations generate [flags]
@@ -63,6 +79,7 @@ lane translations generate [flags]
   -i, --input string                Path to a CSV file containing a key row and a row for each language (Required)
   -m, --main-index int              Required by type ios and by option fill-in. The index of the main/default language row
   -o, --output string               Required for type ios. A path for the generated output
+  -p, --template string             Only for type ios and optional. A path for the template to generate from
   -t, --type string                 The type of output to generate, valid options are 'ios', 'android' or 'json' (Required)
 ```
 
