@@ -4,7 +4,9 @@ Generate translations files from a csv file
 
 ### Synopsis
 
-Reads a CSV file and uses configuration strings to generate static resource files for android or ios.
+Reads a CSV file and uses configuration strings to generate static resource files for android and ios.
+
+JSON output is also supported as simple output, the placeholders discussed below do not apply to JSON output.
 
 Each translated string can have '%<digit>'-style placeholders, however the number of placeholder for each translated language must be the same.
 The placeholders in the generated output will always take a string as input.
@@ -57,11 +59,11 @@ lane translations generate [flags]
   -c, --configuration stringArray   A configuration string consisting of space separated row index and output path. Multiple configurations can be added, but one is required
   -l, --fill-in                     Fill in the value from the main/default language if a value is missing for the current language
   -h, --help                        help for generate
-  -k, --index int                   The index of the key row, defaults to 0
+  -k, --index int                   The index of the key row (Required)
   -i, --input string                Path to a CSV file containing a key row and a row for each language (Required)
-  -m, --main-index int              Required for ios or when using fill-in. The index of the main/default language row, defaults to 0
-  -o, --output string               Required for ios. A path for the generated output
-  -t, --type string                 The type of output to generate, valid options are 'ios' or 'android' (Required)
+  -m, --main-index int              Required by type ios and by option fill-in. The index of the main/default language row
+  -o, --output string               Required for type ios. A path for the generated output
+  -t, --type string                 The type of output to generate, valid options are 'ios', 'android' or 'json' (Required)
 ```
 
 ### SEE ALSO

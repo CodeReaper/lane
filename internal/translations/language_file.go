@@ -55,7 +55,7 @@ func newLanguageFiles(flags *Flags, configurations []string) ([]languageFileWrit
 		}
 
 		index, err := strconv.Atoi(fields[0])
-		if err != nil {
+		if err != nil || index <= 0 {
 			return nil, fmt.Errorf("configuration has invalid index: %s", configuration)
 		}
 
