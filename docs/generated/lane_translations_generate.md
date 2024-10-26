@@ -55,10 +55,11 @@ lane translations generate [flags]
 
 ```
   -c, --configuration stringArray   A configuration string consisting of space separated row index and output path. Multiple configurations can be added, but one is required
+  -l, --fill-in                     Fill in the value from the main/default language if a value is missing for the current language
   -h, --help                        help for generate
   -k, --index int                   The index of the key row, defaults to 0
   -i, --input string                Path to a CSV file containing a key row and a row for each language (Required)
-  -m, --main-index int              Required for ios. The index of the main/default language row, defaults to 0
+  -m, --main-index int              Required for ios or when using fill-in. The index of the main/default language row, defaults to 0
   -o, --output string               Required for ios. A path for the generated output
   -t, --type string                 The type of output to generate, valid options are 'ios' or 'android' (Required)
 ```
