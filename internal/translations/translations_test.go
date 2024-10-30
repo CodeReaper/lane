@@ -31,3 +31,14 @@ func TestTranslationsTranslation(t *testing.T) {
 
 	assert.NotNil(t, translation)
 }
+
+func TestTranslationsFiltersEmptyKey(t *testing.T) {
+	translations, err := newTranslations("testdata/input.csv")
+
+	if !assert.NoError(t, err) {
+		return
+	}
+	translation := translations.translation(1, 3, false, 0)
+
+	assert.NotContains(t, translation.keys, "")
+}

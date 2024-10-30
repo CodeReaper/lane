@@ -33,11 +33,16 @@ func newTranslations(path string) (*translationData, error) {
 func (t *translationData) translation(keyIndex int, valueIndex int, useFallback bool, fallbackIndex int) *translation {
 	items := map[string]string{}
 	for _, r := range t.data {
+		k := r[keyIndex-1]
+		if k == "" {
+			continue
+		}
 		s := r[valueIndex-1]
 		if useFallback && s == "" {
 			s = r[fallbackIndex-1]
 		}
-		items[strings.ToLower(r[keyIndex-1])] = s
+
+		items[strings.ToLower(k)] = s
 	}
 	return newTranslation(items)
 }
