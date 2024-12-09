@@ -50,9 +50,8 @@ func (f *iosSupportLanguageFile) write(translation *translation, io io.Writer) e
 	}
 
 	list := make([]*line, 0)
-	for _, k := range translation.keys {
-		key := strings.ToUpper(k)
-		value := translation.get(k)
+	for _, key := range translation.keys {
+		value := translation.get(key)
 		var item *line
 
 		matches := regex.FindAllStringSubmatch(value, -1)

@@ -3,7 +3,6 @@ package translations
 import (
 	"encoding/csv"
 	"os"
-	"strings"
 )
 
 type translationData struct {
@@ -41,8 +40,7 @@ func (t *translationData) translation(keyIndex int, valueIndex int, useFallback 
 		if useFallback && s == "" {
 			s = r[fallbackIndex-1]
 		}
-
-		items[strings.ToLower(k)] = s
+		items[k] = s
 	}
 	return newTranslation(items)
 }

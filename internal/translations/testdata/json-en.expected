@@ -1,4 +1,5 @@
 {
+  "ioscasesensitivekey": "Something",
   "something": "Something",
   "something_escaped": "Something with ,",
   "something_for_xml": "It's like \u0026 and \u003cb\u003ebold\u003c/b\u003e \"text\" or 官话",
