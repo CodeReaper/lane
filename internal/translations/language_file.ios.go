@@ -19,9 +19,8 @@ func (f *iosLanguageFile) write(translation *translation, io io.Writer) error {
 		"\"", "\\\"",
 		"\n", "\\n")
 
-	for _, k := range translation.keys {
-		key := strings.ToUpper(k)
-		value := translation.get(k)
+	for _, key := range translation.keys {
+		value := translation.get(key)
 		_, err := io.Write([]byte(fmt.Sprintf("\"%s\" = \"%s\";\n", key, escape.Replace(value))))
 		if err != nil {
 			return err
