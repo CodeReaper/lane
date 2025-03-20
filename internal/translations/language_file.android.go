@@ -26,7 +26,7 @@ func (f *androidLanguageFile) write(translation *translation, io io.Writer) erro
 		"'", "\\'",
 		"\n", "\\n")
 
-	_, err := io.Write([]byte("<resources>\n"))
+	_, err := io.Write([]byte("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<resources>\n"))
 	if err != nil {
 		return err
 	}
@@ -34,7 +34,7 @@ func (f *androidLanguageFile) write(translation *translation, io io.Writer) erro
 	for _, k := range translation.keys {
 		key := strings.ToLower(k)
 		value := regex.ReplaceAllString(translation.get(k), "%${1}$$s")
-		_, err = io.Write([]byte(fmt.Sprintf("\t<string name=\"%s\">%s</string>\n", key, escape.Replace(value))))
+		_, err = io.Write([]byte(fmt.Sprintf("    <string name=\"%s\" formatted=\"false\">%s</string>\n", key, escape.Replace(value))))
 		if err != nil {
 			return err
 		}
