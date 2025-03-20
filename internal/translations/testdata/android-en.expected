@@ -1,8 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string name="something">Something</string>
-	<string name="something_escaped">Something with ,</string>
-	<string name="something_for_xml">It\'s like &amp; and &lt;b&gt;bold&lt;/b&gt; \"text\" or 官话</string>
-	<string name="something_with_arguments">Something with %1$s and %2$s</string>
-	<string name="watch_out_for_new_lines">Text\nwith\nnew\nlines</string>
-	<string name="ioscasesensitivekey">Something</string>
+    <string name="something" formatted="false">Something</string>
+    <string name="something_escaped" formatted="false">Something with ,</string>
+    <string name="something_for_xml" formatted="false">It\'s like &amp; and &lt;b&gt;bold&lt;/b&gt; \"text\" or 官话</string>
+    <string name="something_with_arguments" formatted="false">Something with %1$s and %2$s</string>
+    <string name="watch_out_for_new_lines" formatted="false">Text\nwith\nnew\nlines</string>
+    <string name="ioscasesensitivekey" formatted="false">Something</string>
 </resources>
