@@ -16,7 +16,7 @@ func (f *androidLanguageFile) Write(translations *translationData) error {
 }
 
 func (f *androidLanguageFile) write(translation *translation, io io.Writer) error {
-	regex := regexp.MustCompile(`%([0-9]+)`)
+	regex := regexp.MustCompile(`%%([0-9]+)`)
 
 	escape := strings.NewReplacer(
 		"&", "&amp;",
@@ -24,7 +24,8 @@ func (f *androidLanguageFile) write(translation *translation, io io.Writer) erro
 		">", "&gt;",
 		"\"", "\\\"",
 		"'", "\\'",
-		"\n", "\\n")
+		"\n", "\\n",
+		"%", "%%")
 
 	_, err := io.Write([]byte("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<resources>\n"))
 	if err != nil {
@@ -33,8 +34,10 @@ func (f *androidLanguageFile) write(translation *translation, io io.Writer) erro
 
 	for _, k := range translation.keys {
 		key := strings.ToLower(k)
-		value := regex.ReplaceAllString(translation.get(k), "%${1}$$s")
-		_, err = io.Write([]byte(fmt.Sprintf("    <string name=\"%s\" formatted=\"false\">%s</string>\n", key, escape.Replace(value))))
+		translationValue := translation.get(k)
+		escapedValue := escape.Replace(translationValue)
+		formatStringValue := regex.ReplaceAllString(escapedValue, "%${1}$$s")
+		_, err = io.Write([]byte(fmt.Sprintf("    <string name=\"%s\">%s</string>\n", key, formatStringValue)))
 		if err != nil {
 			return err
 		}

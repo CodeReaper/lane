@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="something" formatted="false">Noget</string>
-    <string name="something_only_in_en" formatted="false">Something only in English</string>
+    <string name="something">Noget</string>
+    <string name="something_only_in_en">Something only in English</string>
 </resources>

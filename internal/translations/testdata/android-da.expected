@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="something" formatted="false">Noget</string>
-    <string name="something_escaped" formatted="false">Noget med ,</string>
-    <string name="something_for_xml" formatted="false">Det er som &amp; og &lt;b&gt;fremhævet&lt;/b&gt; \"tekst\" eller 官话</string>
-    <string name="something_with_arguments" formatted="false">Noget med %1$s og %2$s</string>
-    <string name="watch_out_for_new_lines" formatted="false">Tekst\nmed\nline\nskift</string>
-    <string name="ioscasesensitivekey" formatted="false">Noget</string>
+    <string name="something">Noget</string>
+    <string name="something_escaped">Noget med ,</string>
+    <string name="something_for_xml">Det er som &amp; og &lt;b&gt;fremhævet&lt;/b&gt; \"tekst\" eller 官话</string>
+    <string name="something_with_arguments">Noget med %1$s og %2$s</string>
+    <string name="something_with_escaped_percentage">Noget med %% %1$s %%%2$s</string>
+    <string name="watch_out_for_new_lines">Tekst\nmed\nline\nskift</string>
+    <string name="ioscasesensitivekey">Noget</string>
 </resources>
