@@ -36,8 +36,8 @@ func (f *androidLanguageFile) write(translation *translation, io io.Writer) erro
 		key := strings.ToLower(k)
 		translationValue := translation.get(k)
 		escapedValue := escape.Replace(translationValue)
-		formatStringValue := regex.ReplaceAllString(escapedValue, "%${1}$$s")
-		_, err = io.Write([]byte(fmt.Sprintf("    <string name=\"%s\">%s</string>\n", key, formatStringValue)))
+		value := regex.ReplaceAllString(escapedValue, "%${1}$$s")
+		_, err = io.Write([]byte(fmt.Sprintf("    <string name=\"%s\">%s</string>\n", key, value)))
 		if err != nil {
 			return err
 		}
