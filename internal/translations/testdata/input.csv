@@ -2,6 +2,7 @@ KEY,UPDATE NEEDED,EN,DA,COMMENT
 SOMETHING,,Something,Noget,
 SOMETHING_ESCAPED,,"Something with ,","Noget med ,",
 SOMETHING_WITH_ARGUMENTS,,Something with %1 and %2,Noget med %1 og %2,
+SOMETHING_WITH_ESCAPED_PERCENTAGE,,Something with % %1 %%2,Noget med % %1 %%2,
 SOMETHING_FOR_XML,,"It's like & and <b>bold</b> ""text"" or 官话","Det er som & og <b>fremhævet</b> ""tekst"" eller 官话",
 WATCH_OUT_FOR_NEW_LINES,,"Text
 with

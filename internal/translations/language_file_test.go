@@ -127,7 +127,7 @@ func TestLanguageFileWriteInputFile(t *testing.T) {
 }
 
 func TestEscapingSingleColumn(t *testing.T) {
-	output := "<resources>\n\t<string name=\"that\">Another string including a | even.</string>\n\t<string name=\"this\">This is a longer sentence, which includes a comma.</string>\n</resources>\n"
+	output := "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<resources>\n    <string name=\"that\">Another string including a | even.</string>\n    <string name=\"this\">This is a longer sentence, which includes a comma.</string>\n</resources>\n"
 	outputPath := "../../build/out.csv"
 	inputPath := "../../build/test.csv"
 	err := os.WriteFile("../../build/test.csv", []byte("key,en\nTHIS,\"This is a longer sentence, which includes a comma.\"\nTHAT,Another string including a | even."), 0777)
@@ -155,7 +155,7 @@ func TestEscapingSingleColumn(t *testing.T) {
 }
 
 func TestEscapingAllColumns(t *testing.T) {
-	output := "<resources>\n\t<string name=\"that\">Another string including a | even.</string>\n\t<string name=\"this\">This is a longer sentence, which includes a comma.</string>\n</resources>\n"
+	output := "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<resources>\n    <string name=\"that\">Another string including a | even.</string>\n    <string name=\"this\">This is a longer sentence, which includes a comma.</string>\n</resources>\n"
 	outputPath := "../../build/out.csv"
 	inputPath := "../../build/test.csv"
 	err := os.WriteFile("../../build/test.csv", []byte("\"key\",\"en\"\n\"THIS\",\"This is a longer sentence, which includes a comma.\"\n\"THAT\",\"Another string including a | even.\""), 0777)

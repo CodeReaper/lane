@@ -4,5 +4,6 @@
   "something_escaped": "Something with ,",
   "something_for_xml": "It's like \u0026 and \u003cb\u003ebold\u003c/b\u003e \"text\" or 官话",
   "something_with_arguments": "Something with %1 and %2",
+  "something_with_escaped_percentage": "Something with % %1 %%2",
   "watch_out_for_new_lines": "Text\nwith\nnew\nlines"
 }

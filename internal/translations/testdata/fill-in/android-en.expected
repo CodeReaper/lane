@@ -1,4 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string name="something">Something</string>
-	<string name="something_only_in_en">Something only in English</string>
+    <string name="something">Something</string>
+    <string name="something_only_in_en">Something only in English</string>
 </resources>
