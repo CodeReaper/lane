@@ -8,13 +8,13 @@
 
 ## Installation
 
-The prefered method of installation is through [asdf](http://asdf-vm.com/).
+The preferred method of installation is through [asdf](http://asdf-vm.com/).
 
 A lane plugin to install has been set up at [asdf-lane](https://github.com/CodeReaper/asdf-lane).
 
 Alternatively this tool can be run directly:
 ```go
-go run github.com/codereaper/lane@1.0.0
+go run github.com/codereaper/lane@1
 ```
 
 ## Containerized

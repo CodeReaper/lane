@@ -20,13 +20,13 @@ lane translations download [flags]
 ### Examples
 
 ```
-  lane translations download -o output.csv -c googleapi.json -d 11p...ev7lc -f csv
+  lane translations download -o output.csv -c google-api.json -d 11p...ev7lc -f csv
 ```
 
 ### Options
 
 ```
-  -c, --credentials string   A path to the credentails json file issued by Google (Required). More details under help
+  -c, --credentials string   A path to the credentials json file issued by Google (Required). More details under help
   -d, --document string      The document id of the sheet to download (Required). Found in its url, e.g. https://docs.google.com/spreadsheets/d/<document-id>/edit#gid=0
   -f, --format string        The format of the output, defaults to csv
   -h, --help                 help for download

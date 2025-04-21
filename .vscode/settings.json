@@ -2,5 +2,20 @@
     "editor.formatOnSave": true,
     "yaml.schemas": {
         "https://json.schemastore.org/github-workflow.json": ".github/workflows/*.yaml"
-    }
+    },
+    "cSpell.words": [
+        "codereaper",
+        "Noget",
+        "stretchr",
+        "swiftlint",
+        "testdata",
+        "tmpl"
+    ],
+    "cSpell.ignorePaths": [
+        ".gitignore",
+        "Dockerfile",
+        "docs/generated",
+        "go.*",
+        "internal/translations/testdata",
+    ]
 }

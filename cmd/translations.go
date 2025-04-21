@@ -33,13 +33,13 @@ Make sure to share the sheet with the 'client_email' assigned to your service ac
 		Use:     "download",
 		Short:   "Download translations",
 		Long:    additionalHelp,
-		Example: "  lane translations download -o output.csv -c googleapi.json -d 11p...ev7lc -f csv",
+		Example: "  lane translations download -o output.csv -c google-api.json -d 11p...ev7lc -f csv",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return downloader.Download(context.Background(), &flags)
 		},
 	}
 	cmd.Flags().StringVarP(&flags.Output, "output", "o", "", "Path to save output file (Required)")
-	cmd.Flags().StringVarP(&flags.Credentials, "credentials", "c", "", "A path to the credentails json file issued by Google (Required). More details under help")
+	cmd.Flags().StringVarP(&flags.Credentials, "credentials", "c", "", "A path to the credentials json file issued by Google (Required). More details under help")
 	cmd.Flags().StringVarP(&flags.DocumentId, "document", "d", "", "The document id of the sheet to download (Required). Found in its url, e.g. https://docs.google.com/spreadsheets/d/<document-id>/edit#gid=0")
 	cmd.Flags().StringVarP(&flags.Format, "format", "f", "", "The format of the output, defaults to csv")
 	cmd.MarkFlagRequired("output")

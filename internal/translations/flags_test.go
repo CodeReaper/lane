@@ -228,13 +228,13 @@ var validationCases = []struct {
 }
 
 func TestFlagsValidate(t *testing.T) {
-	for _, kase := range validationCases {
-		t.Run(kase.name, func(t *testing.T) {
-			err := kase.flags.validate()
-			if kase.passes && err != nil {
+	for _, c := range validationCases {
+		t.Run(c.name, func(t *testing.T) {
+			err := c.flags.validate()
+			if c.passes && err != nil {
 				t.Errorf("expected to pass, but got %v", err)
 			}
-			if !kase.passes && err == nil {
+			if !c.passes && err == nil {
 				t.Errorf("expected to fail, but got %v", err)
 			}
 		})

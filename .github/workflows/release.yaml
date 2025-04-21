@@ -1,3 +1,5 @@
+# cSpell:ignore GOARCH GOARM buildx softprops
+
 name: Release
 
 on:
@@ -100,7 +102,7 @@ jobs:
           path: artifacts
 
       - name: Display structure of files
-        run: ls -Rlah
+        run: ls -R -lah
 
       - name: Attach files
         if: github.event_name == 'release'

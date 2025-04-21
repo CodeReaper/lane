@@ -1,8 +1,9 @@
 {
     "recommendations": [
-        "golang.go",
         "editorconfig.editorconfig",
+        "golang.go",
         "ms-vscode.makefile-tools",
-        "redhat.vscode-yaml"
+        "redhat.vscode-yaml",
+        "streetsidesoftware.code-spell-checker"
     ]
 }
