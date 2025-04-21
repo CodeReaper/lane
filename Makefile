@@ -1,3 +1,5 @@
+# cSpell:ignore trimpath coverprofile
+
 CI = $(shell env | grep ^CI=)
 VERSION = 0.0.0
 SUFFIX =

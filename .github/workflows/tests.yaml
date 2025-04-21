@@ -1,3 +1,5 @@
+# cSpell:ignore pipx jsonschema schemafile
+
 name: Tests
 
 on:

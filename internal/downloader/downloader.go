@@ -9,12 +9,13 @@ import (
 	"strings"
 )
 
+// cSpell:disable
 var validFormats = map[string]string{
 	"csv":  "text/csv",
 	"tsv":  "text/tab-separated-values",
 	"ods":  "application/x-vnd.oasis.opendocument.spreadsheet",
 	"xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-}
+} // cSpell:enable
 
 func Download(ctx context.Context, flags *Flags) error {
 	service, err := newService(ctx, flags.Credentials)
