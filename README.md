@@ -1,5 +1,6 @@
 ![version](https://img.shields.io/github/v/release/CodeReaper/lane)
 ![tests](https://github.com/CodeReaper/lane/actions/workflows/tests.yaml/badge.svg)
+[![Go Report Card](https://goreportcard.com/badge/github.com/codereaper/lane)](https://goreportcard.com/report/github.com/codereaper/lane)
 ![license](https://img.shields.io/github/license/CodeReaper/lane.svg)
 
 # lane
