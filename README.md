@@ -7,6 +7,10 @@
 
 `lane` is a task automation helper.
 
+## Guides
+
+1. [Translations](docs/guides/using-translations.md) can help with generating translation files from a single source of truth.
+
 ## Installation
 
 The preferred method of installation is through [asdf](http://asdf-vm.com/).
