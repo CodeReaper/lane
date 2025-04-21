@@ -13,7 +13,7 @@ jobs:
     name: Verify version
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ env.version }}
+      version: env.version
     steps:
       - name: Output real version
         run: echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
