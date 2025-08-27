@@ -11,7 +11,7 @@ jobs:
     name: Unit tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
@@ -28,7 +28,7 @@ jobs:
     name: Documentation tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
@@ -41,7 +41,7 @@ jobs:
     name: Editorconfig check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: editorconfig-checker/action-editorconfig-checker@main
       - run: editorconfig-checker
         shell: bash
@@ -50,7 +50,7 @@ jobs:
     name: Validate dependabot
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - run: pipx install check-jsonschema
         shell: bash
       - run: check-jsonschema --builtin-schema vendor.dependabot .github/dependabot.yml
@@ -59,7 +59,7 @@ jobs:
   workflow-validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: asdf-vm/actions/install@v4
         with:
           tool_versions: |
@@ -72,7 +72,7 @@ jobs:
     name: No 'fix me's check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - run: grep -RHin $(printf Zml4bWUK | base64 -d) . && exit 1 || exit 0 # had to hide the `f i x m e` inside of base64 to not trigger it here too
 
   tests-succeeded:
