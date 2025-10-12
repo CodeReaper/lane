@@ -1,21 +1,25 @@
 name: Dependabot Auto Release
 
 on:
-  push:
-    branches:
-      - main
+  pull_request:
+    types:
+      - closed
 
 jobs:
   version:
     name: Setup version
-    if: github.actor == 'dependabot[bot]'
+    if: >
+      github.actor == 'dependabot[bot]' &&
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.base.ref == 'main'
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.bump.outputs.new_version }}
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
 
       - name: Determine next patch version
@@ -27,17 +31,10 @@ jobs:
           new="$major.$minor.$((patch + 1))"
           echo "new_version=$new" >> $GITHUB_OUTPUT
 
-      - name: Tag the release
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag ${{ steps.bump.outputs.new_version }}
-          git push origin ${{ steps.bump.outputs.new_version }}
-
   release:
     name: Build release
     needs: version
     uses: ./.github/workflows/build-release.yaml
     with:
       version: ${{ needs.version.outputs.version }}
-      event_name: push
+      event_name: release
