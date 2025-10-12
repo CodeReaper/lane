@@ -12,6 +12,8 @@ jobs:
     if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v5
+
       - name: Output real version
         if: github.event_name == 'release'
         id: real
