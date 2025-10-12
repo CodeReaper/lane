@@ -8,16 +8,13 @@ on:
 jobs:
   version:
     name: Setup version
-    if: >
-      github.actor == 'dependabot[bot]' &&
-      github.event.pull_request.merged == true &&
-      github.event.pull_request.base.ref == 'main'
+    if: github.actor == 'dependabot[bot]'
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.bump.outputs.new_version }}
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
