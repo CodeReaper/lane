@@ -24,3 +24,9 @@ indent_style = unset
 [Makefile]
 indent_style = tab
 indent_size = 4
+
+[internal/translations/testdata/**]
+insert_final_newline = unset
+
+[.vscode/**]
+insert_final_newline = unset
