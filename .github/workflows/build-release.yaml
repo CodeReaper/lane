@@ -9,7 +9,7 @@ on:
         description: Version tag to release
         required: true
         type: string
-      event_type:
+      event_name:
         description: Type of event
         required: true
         type: string
@@ -71,9 +71,9 @@ jobs:
         with:
           build-args: VERSION=${{ inputs.version }}
           context: .
-          platforms: ${{ github.event_name == 'release' && 'linux/arm64,linux/amd64' || '' }}
-          push: ${{ github.event_name == 'release' && 'true' || 'false' }}
-          load: ${{ github.event_name == 'release' && 'false' || 'true' }}
+          platforms: ${{ inputs.event_name == 'release' && 'linux/arm64,linux/amd64' || '' }}
+          push: ${{ inputs.event_name == 'release' && 'true' || 'false' }}
+          load: ${{ inputs.event_name == 'release' && 'false' || 'true' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
@@ -95,9 +95,8 @@ jobs:
         run: ls -R -lah
 
       - name: Attach files
-        if: github.event_name == inputs.event_type
+        if: inputs.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: "${{ inputs.version }}"
           files: artifacts/*
-

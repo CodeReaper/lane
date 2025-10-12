@@ -36,5 +36,4 @@ jobs:
         uses: ./.github/workflows/build-release.yaml
         with:
           version: ${{ steps.bump.outputs.new_version }}
-          event_type: push
-
+          event_name: push

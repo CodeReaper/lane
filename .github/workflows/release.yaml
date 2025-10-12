@@ -9,6 +9,7 @@ on:
 jobs:
   version:
     name: Setup version
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Output real version
@@ -25,5 +26,4 @@ jobs:
         uses: ./.github/workflows/build-release.yaml
         with:
           version: ${{ steps.real.outputs.version || steps.fake.outputs.version }}
-          event_type: ${{ github.event_name }}
-
+          event_name: ${{ github.event_name }}
