@@ -6,10 +6,12 @@ on:
       - main
 
 jobs:
-  dependabot-release:
+  version:
     name: Setup version
     if: github.actor == 'dependabot[bot]'
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.bump.outputs.new_version }}
 
     steps:
       - uses: actions/checkout@v5
@@ -32,8 +34,10 @@ jobs:
           git tag ${{ steps.bump.outputs.new_version }}
           git push origin ${{ steps.bump.outputs.new_version }}
 
-      - name: Build release
-        uses: ./.github/workflows/build-release.yaml
-        with:
-          version: ${{ steps.bump.outputs.new_version }}
-          event_name: push
+  release:
+    name: Build release
+    needs: version
+    uses: ./.github/workflows/build-release.yaml
+    with:
+      version: ${{ needs.version.outputs.version }}
+      event_name: push
