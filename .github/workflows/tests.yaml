@@ -84,8 +84,14 @@ jobs:
       - dependabot-validate
       - workflow-validate
       - wip-check
-
     runs-on: ubuntu-latest
     steps:
+      - name: Enable auto-merge for Dependabot PRs
+        run: gh pr merge --auto --merge "$PR_URL"
+        if: ${{ github.actor == 'dependabot[bot]' && github.event_name == 'pull_request'}}
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ github.token }}
+
       - name: All clear
         run: exit 0

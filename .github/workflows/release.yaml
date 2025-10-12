@@ -11,7 +11,11 @@ jobs:
     name: Setup version
     if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.real.outputs.version || steps.fake.outputs.version }}
     steps:
+      - uses: actions/checkout@v5
+
       - name: Output real version
         if: github.event_name == 'release'
         id: real
@@ -22,8 +26,10 @@ jobs:
         id: fake
         run: echo "version=0.0.0" >> $GITHUB_OUTPUT
 
-      - name: Build release
-        uses: ./.github/workflows/build-release.yaml
-        with:
-          version: ${{ steps.real.outputs.version || steps.fake.outputs.version }}
-          event_name: ${{ github.event_name }}
+  release:
+    name: Build release
+    needs: version
+    uses: ./.github/workflows/build-release.yaml
+    with:
+      version: ${{ needs.version.outputs.version }}
+      event_name: ${{ github.event_name }}
