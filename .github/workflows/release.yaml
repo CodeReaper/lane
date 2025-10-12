@@ -9,7 +9,7 @@ on:
 jobs:
   version:
     name: Setup version
-    if: github.actor != 'dependabot[bot]'
+    if: github.actor != 'dependabot[bot]' || github.event_name != 'release'
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.real.outputs.version || steps.fake.outputs.version }}
