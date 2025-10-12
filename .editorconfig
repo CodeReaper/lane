@@ -28,5 +28,8 @@ indent_size = 4
 [internal/translations/testdata/**]
 insert_final_newline = unset
 
+[internal/downloader/testdata/**]
+insert_final_newline = unset
+
 [.vscode/**]
 insert_final_newline = unset
