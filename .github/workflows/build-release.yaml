@@ -100,3 +100,4 @@ jobs:
         with:
           tag_name: "${{ inputs.version }}"
           files: artifacts/*
+          generate_release_notes: true
