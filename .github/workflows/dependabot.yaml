@@ -1,0 +1,40 @@
+name: Dependabot Auto Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  dependabot-release:
+    name: Setup version
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Determine next patch version
+        id: bump
+        run: |
+          latest=$(git describe --tags --abbrev=0 || echo "0.0.0")
+          version=${latest#v}
+          IFS='.' read -r major minor patch <<< "$version"
+          new="$major.$minor.$((patch + 1))"
+          echo "new_version=$new" >> $GITHUB_OUTPUT
+
+      - name: Tag the release
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag ${{ steps.bump.outputs.new_version }}
+          git push origin ${{ steps.bump.outputs.new_version }}
+
+      - name: Build release
+        uses: ./.github/workflows/build-release.yaml
+        with:
+          version: ${{ steps.bump.outputs.new_version }}
+          event_type: push
+
