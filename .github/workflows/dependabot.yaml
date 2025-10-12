@@ -8,7 +8,7 @@ on:
 jobs:
   version:
     name: Setup version
-    if: github.actor == 'dependabot[bot]'
+    if: github.actor == 'codereaper-automation[bot]'
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.bump.outputs.new_version }}

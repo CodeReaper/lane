@@ -9,12 +9,12 @@ on:
 jobs:
   version:
     name: Setup version
-    if: github.actor != 'dependabot[bot]' || github.event_name != 'release'
+    if: (github.actor != 'dependabot[bot]' && github.actor != 'codereaper-automation[bot]') || github.event_name != 'release'
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.real.outputs.version || steps.fake.outputs.version }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
 
       - name: Output real version
         if: github.event_name == 'release'
