@@ -10,6 +10,7 @@ import (
 
 type Service interface {
 	download(documentId string, mimeType string) (*http.Response, error)
+	list() (*drive.FileList, error)
 }
 
 type GoogleAPIService struct {
@@ -31,4 +32,8 @@ func newService(ctx context.Context, credentials string) (Service, error) {
 
 func (s *GoogleAPIService) download(documentId string, mimeType string) (*http.Response, error) {
 	return s.service.Files.Export(documentId, mimeType).Context(s.ctx).Download()
+}
+
+func (s *GoogleAPIService) list() (*drive.FileList, error) {
+	return s.service.Files.List().Context(s.ctx).Do()
 }

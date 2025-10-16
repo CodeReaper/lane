@@ -26,6 +26,30 @@ func Download(ctx context.Context, flags *Flags) error {
 	return download(flags, service)
 }
 
+// List fetches a map of document id to document names
+func List(ctx context.Context, credentials string) (map[string]string, error) {
+	service, err := newService(ctx, credentials)
+	if err != nil {
+		return nil, err
+	}
+
+	return list(service)
+}
+
+func list(service Service) (map[string]string, error) {
+	list, err := service.list()
+	if err != nil {
+		return nil, err
+	}
+
+	result := make(map[string]string, 0)
+	for _, file := range list.Files {
+		result[file.Id] = file.Name
+	}
+
+	return result, nil
+}
+
 func download(flags *Flags, service Service) error {
 	if err := flags.validate(); err != nil {
 		return err

@@ -42,3 +42,5 @@ func TestGoogleAPIDownload(t *testing.T) {
 
 	assert.EqualValues(t, signal, bytes)
 }
+
+// FIXME: add tests

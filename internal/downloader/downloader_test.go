@@ -10,15 +10,21 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/api/drive/v3"
 )
 
 type MockService struct {
-	resp *http.Response
-	err  error
+	resp  *http.Response
+	files *drive.FileList
+	err   error
 }
 
 func (s MockService) download(documentId string, mimeType string) (*http.Response, error) {
 	return s.resp, s.err
+}
+
+func (s MockService) list() (*drive.FileList, error) {
+	return s.files, s.err
 }
 
 var expectedDownloadPath = "../../build/out.csv"
@@ -27,6 +33,8 @@ func cleanup() {
 	log.Println("setup test")
 	os.Remove(expectedDownloadPath)
 }
+
+// FIXME: add tests
 
 func TestDownloadFailure(t *testing.T) {
 	defer cleanup()

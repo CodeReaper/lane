@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/codereaper/lane/internal/downloader"
 	"github.com/codereaper/lane/internal/translations"
@@ -16,6 +17,30 @@ func newTranslationsCommand() *cobra.Command {
 	}
 	cmd.AddCommand(newTranslationsDownloadCommand())
 	cmd.AddCommand(newTranslationsGenerateCommand())
+	cmd.AddCommand(newTranslationsListCommand())
+	return cmd
+}
+
+func newTranslationsListCommand() *cobra.Command {
+	var credentials string
+	var cmd = &cobra.Command{
+		Use:     "list",
+		Short:   "List google docs sheets",
+		Example: "  lane translations list -c google-api.json",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			list, err := downloader.List(context.Background(), credentials)
+			if err != nil {
+				return err
+			}
+			fmt.Printf("Documents (count: %d):\n", len(list))
+			for id, name := range list {
+				fmt.Printf("Id: %s \tName: %s\n", id, name)
+			}
+			return nil
+		},
+	}
+	cmd.Flags().StringVarP(&credentials, "credentials", "c", "", "A path to the credentials json file issued by Google (Required).")
+	cmd.MarkFlagRequired("credentials")
 	return cmd
 }
 

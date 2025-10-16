@@ -1,10 +1,11 @@
 module github.com/codereaper/lane
 
-go 1.24.2
+go 1.25.3
 
 require (
 	github.com/spf13/cobra v1.10.1
 	github.com/stretchr/testify v1.11.1
+	golang.org/x/crypto/x509roots/fallback v0.0.0-20251009181029-0b7aa0cfb07b
 	google.golang.org/api v0.252.0
 )
 
