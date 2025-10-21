@@ -38,6 +38,11 @@ unit-tests:
 	go test -timeout 10s -p 1 -coverprofile=build/coverage.out ./internal/...
 	go tool cover -html=build/coverage.out -o build/coverage.html
 
+smoke-test:
+	@if [ -f credentials.json ]; then \
+		go run ./... translations list -c credentials.json; \
+	fi
+
 verify-version:
 ifneq ($(TOOL_VERSION),$(MOD_VERSION))
 	@echo 'Mismatched go versions'
@@ -45,4 +50,4 @@ ifneq ($(TOOL_VERSION),$(MOD_VERSION))
 endif
 	@exit 0
 
-test: verify-version tidy unit-tests
+test: verify-version tidy unit-tests smoke-test

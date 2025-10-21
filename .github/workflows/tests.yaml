@@ -15,6 +15,8 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
+      - run: echo {{ secrets.SMOKE_TEST_CREDENTIALS_B64 }} | base64 -d > credentials.json
+        shell: bash
       - run: make test
         shell: bash
       - name: Upload artifacts
