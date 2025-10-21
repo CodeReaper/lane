@@ -34,8 +34,6 @@ func cleanup() {
 	os.Remove(expectedDownloadPath)
 }
 
-// FIXME: add tests
-
 func TestDownloadFailure(t *testing.T) {
 	defer cleanup()
 	flags := Flags{
@@ -45,8 +43,7 @@ func TestDownloadFailure(t *testing.T) {
 		Format:      "csv",
 	}
 	svc := MockService{
-		resp: nil,
-		err:  fmt.Errorf("always fails"),
+		err: fmt.Errorf("always fails"),
 	}
 	err := download(&flags, svc)
 	assert.Error(t, err)
@@ -67,7 +64,6 @@ func TestDownloadFailedResponse(t *testing.T) {
 			Body:          io.NopCloser(&bytes.Buffer{}),
 			ContentLength: 0,
 		},
-		err: nil,
 	}
 	err := download(&flags, svc)
 	assert.Error(t, err)
@@ -82,10 +78,7 @@ func TestDownloadInvalidFlags(t *testing.T) {
 		DocumentId:  "1234567890",
 		Format:      "unknown",
 	}
-	svc := MockService{
-		resp: nil,
-		err:  nil,
-	}
+	svc := MockService{}
 	err := download(&flags, svc)
 	assert.Error(t, err)
 }
@@ -107,7 +100,6 @@ func TestDownload(t *testing.T) {
 			Body:          io.NopCloser(bytes.NewBuffer(expected)),
 			ContentLength: int64(len(expected)),
 		},
-		err: nil,
 	}
 	err := download(&flags, svc)
 	assert.NoError(t, err)
@@ -125,4 +117,24 @@ func TestMimetypeLookup(t *testing.T) {
 	m, err = lookupMimeType("unknown")
 	assert.Empty(t, m)
 	assert.Error(t, err)
+}
+
+func TestListFailure(t *testing.T) {
+	svc := MockService{
+		err: fmt.Errorf("always fails"),
+	}
+	r, err := list(svc)
+	assert.Nil(t, r)
+	assert.Error(t, err)
+}
+
+func TestList(t *testing.T) {
+	svc := MockService{
+		files: &drive.FileList{Files: []*drive.File{{Id: "id"}}},
+	}
+	r, err := list(svc)
+	assert.Nil(t, err)
+	assert.NotNil(t, r)
+	assert.Equal(t, 1, len(r))
+	assert.ElementsMatch(t, []string{"id"}, keys(r))
 }
