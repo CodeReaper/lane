@@ -17,4 +17,5 @@ Download translations from google sheets and/or generate translations from local
 * [lane](lane.md)	 - Automates common tasks
 * [lane translations download](lane_translations_download.md)	 - Download translations
 * [lane translations generate](lane_translations_generate.md)	 - Generate translations files from a csv file
+* [lane translations list](lane_translations_list.md)	 - List google docs sheets
 
