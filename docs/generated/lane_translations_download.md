@@ -1,6 +1,6 @@
 ## lane translations download
 
-Download translations
+Download google sheets
 
 ### Synopsis
 

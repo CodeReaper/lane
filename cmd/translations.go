@@ -9,6 +9,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var additionalHelpAboutAuthentication = `Authentication is done using a json file issued by Google. You get this json file by creating a "Service Account Key", which if you do not have a service account, requires you to first create a service account.
+
+Creating both an account and a key is explaining here: https://developers.google.com/identity/protocols/oauth2/service-account#creatinganaccount
+
+You may have to enable Google Drive API access when using it for the first time. The error message(s) should provide a direct link to enabling access.
+
+Make sure to share the sheet with the 'client_email' assigned to your service account.
+`
+
 func newTranslationsCommand() *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "translations",
@@ -25,7 +34,8 @@ func newTranslationsListCommand() *cobra.Command {
 	var credentials string
 	var cmd = &cobra.Command{
 		Use:     "list",
-		Short:   "List google docs sheets",
+		Short:   "List google sheets",
+		Long:    additionalHelpAboutAuthentication,
 		Example: "  lane translations list -c google-api.json",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			list, err := downloader.List(context.Background(), credentials)
@@ -45,19 +55,11 @@ func newTranslationsListCommand() *cobra.Command {
 }
 
 func newTranslationsDownloadCommand() *cobra.Command {
-	var additionalHelp = `Authentication is done using a json file issued by Google. You get this json file by creating a "Service Account Key", which if you do not have a service account, requires you to first create a service account.
-
-Creating both an account and a key is explaining here: https://developers.google.com/identity/protocols/oauth2/service-account#creatinganaccount
-
-You may have to enable Google Drive API access when using it for the first time. The error message(s) should provide a direct link to enabling access.
-
-Make sure to share the sheet with the 'client_email' assigned to your service account.
-`
 	var flags downloader.Flags
 	var cmd = &cobra.Command{
 		Use:     "download",
-		Short:   "Download translations",
-		Long:    additionalHelp,
+		Short:   "Download google sheets",
+		Long:    additionalHelpAboutAuthentication,
 		Example: "  lane translations download -o output.csv -c google-api.json -d 11p...ev7lc -f csv",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return downloader.Download(context.Background(), &flags)
