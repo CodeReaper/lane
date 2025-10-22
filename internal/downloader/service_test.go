@@ -2,6 +2,7 @@ package downloader
 
 import (
 	"context"
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -41,4 +42,35 @@ func TestGoogleAPIDownload(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.EqualValues(t, signal, bytes)
+}
+
+func TestGoogleAPIList(t *testing.T) {
+	id := "Test"
+	files := drive.FileList{
+		Files: []*drive.File{
+			{
+				Id: id,
+			},
+		},
+	}
+	bytes, err := json.Marshal(files)
+	assert.NoError(t, err)
+
+	ctx := context.Background()
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write(bytes)
+	}))
+	defer ts.Close()
+	svc, err := drive.NewService(ctx, option.WithoutAuthentication(), option.WithEndpoint(ts.URL))
+	assert.NoError(t, err, "unable to create client")
+
+	gas := GoogleAPIService{
+		ctx:     ctx,
+		service: svc,
+	}
+
+	list, err := gas.list()
+	assert.NoError(t, err)
+	assert.NotNil(t, list)
+	assert.Equal(t, id, list.Files[0].Id)
 }

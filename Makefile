@@ -36,13 +36,27 @@ endif
 
 unit-tests:
 	go test -timeout 10s -p 1 -coverprofile=build/coverage.out ./internal/...
+ifeq ($(strip $(GITHUB_STEP_SUMMARY)),)
 	go tool cover -html=build/coverage.out -o build/coverage.html
+	go tool cover -func=build/coverage.out
+else
+	{	\
+		echo '## Code Coverage'; \
+		echo '|File|Method|Coverage|'; \
+		echo '|---|---|--:|'; \
+		go tool cover -func=build/coverage.out | awk -F'\t+' 'BEGIN {OFS=" | "} {print "| " $$1, $$2, $$3 " |"}'; \
+	} | tee -a $(GITHUB_STEP_SUMMARY)
+endif
+
+smoke-test:
+	@if [ -f credentials.json ]; then \
+		go run ./... translations list -c credentials.json; \
+	fi
 
 verify-version:
 ifneq ($(TOOL_VERSION),$(MOD_VERSION))
 	@echo 'Mismatched go versions'
 	@exit 1
 endif
-	@exit 0
 
-test: verify-version tidy unit-tests
+test: verify-version tidy unit-tests smoke-test

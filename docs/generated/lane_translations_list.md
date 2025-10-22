@@ -1,6 +1,6 @@
-## lane translations download
+## lane translations list
 
-Download google sheets
+List google sheets
 
 ### Synopsis
 
@@ -14,23 +14,20 @@ Make sure to share the sheet with the 'client_email' assigned to your service ac
 
 
 ```
-lane translations download [flags]
+lane translations list [flags]
 ```
 
 ### Examples
 
 ```
-  lane translations download -o output.csv -c google-api.json -d 11p...ev7lc -f csv
+  lane translations list -c google-api.json
 ```
 
 ### Options
 
 ```
-  -c, --credentials string   A path to the credentials json file issued by Google (Required). More details under help
-  -d, --document string      The document id of the sheet to download (Required). Found in its url, e.g. https://docs.google.com/spreadsheets/d/<document-id>/edit#gid=0
-  -f, --format string        The format of the output, defaults to csv
-  -h, --help                 help for download
-  -o, --output string        Path to save output file (Required)
+  -c, --credentials string   A path to the credentials json file issued by Google (Required).
+  -h, --help                 help for list
 ```
 
 ### SEE ALSO
