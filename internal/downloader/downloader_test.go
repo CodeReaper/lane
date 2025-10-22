@@ -2,6 +2,7 @@ package downloader
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"log"
@@ -34,7 +35,35 @@ func cleanup() {
 	os.Remove(expectedDownloadPath)
 }
 
-func TestDownloadFailure(t *testing.T) {
+func TestDownloadEmptyCredentialsFailure(t *testing.T) {
+	defer cleanup()
+	flags := Flags{
+		Output:      expectedDownloadPath,
+		Credentials: "testdata/empty.json",
+		DocumentId:  "1234567890",
+		Format:      "csv",
+	}
+
+	err := Download(context.TODO(), &flags)
+
+	assert.Error(t, err)
+}
+
+func TestDownloadNoCredentialsFailure(t *testing.T) {
+	defer cleanup()
+	flags := Flags{
+		Output:      expectedDownloadPath,
+		Credentials: "testdata/does-not-exist.json",
+		DocumentId:  "1234567890",
+		Format:      "csv",
+	}
+
+	err := Download(context.TODO(), &flags)
+
+	assert.Error(t, err)
+}
+
+func TestDownloadServiceFailure(t *testing.T) {
 	defer cleanup()
 	flags := Flags{
 		Output:      expectedDownloadPath,
@@ -119,7 +148,19 @@ func TestMimetypeLookup(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestListFailure(t *testing.T) {
+func TestListEmptyCredentialsFailure(t *testing.T) {
+	_, err := List(context.TODO(), "testdata/empty.json")
+
+	assert.Error(t, err)
+}
+
+func TestListNoCredentialsFailure(t *testing.T) {
+	_, err := List(context.TODO(), "testdata/does-not-exist.json")
+
+	assert.Error(t, err)
+}
+
+func TestListServiceFailure(t *testing.T) {
 	svc := MockService{
 		err: fmt.Errorf("always fails"),
 	}

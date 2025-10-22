@@ -36,8 +36,8 @@ endif
 
 unit-tests:
 	go test -timeout 10s -p 1 -coverprofile=build/coverage.out ./internal/...
-	go tool cover -html=build/coverage.out -o build/coverage.html
 ifeq ($(strip $(GITHUB_STEP_SUMMARY)),)
+	go tool cover -html=build/coverage.out -o build/coverage.html
 	go tool cover -func=build/coverage.out
 else
 	{	\
@@ -58,6 +58,5 @@ ifneq ($(TOOL_VERSION),$(MOD_VERSION))
 	@echo 'Mismatched go versions'
 	@exit 1
 endif
-	@exit 0
 
 test: verify-version tidy unit-tests smoke-test
