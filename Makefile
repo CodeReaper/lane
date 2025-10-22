@@ -49,14 +49,16 @@ else
 endif
 
 smoke-test:
-	@if [ -f credentials.json ]; then \
-		go run ./... translations list -c credentials.json; \
-	fi
+ifneq (,$(wildcard credentials.json))
+	go run ./... translations list -c credentials.json
+endif
+	@exit 0
 
 verify-version:
 ifneq ($(TOOL_VERSION),$(MOD_VERSION))
 	@echo 'Mismatched go versions'
 	@exit 1
 endif
+	@exit 0
 
 test: verify-version tidy unit-tests smoke-test
