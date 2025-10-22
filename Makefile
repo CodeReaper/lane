@@ -37,6 +37,16 @@ endif
 unit-tests:
 	go test -timeout 10s -p 1 -coverprofile=build/coverage.out ./internal/...
 	go tool cover -html=build/coverage.out -o build/coverage.html
+ifeq ($(strip $(GITHUB_STEP_SUMMARY)),)
+	go tool cover -func=build/coverage.out
+else
+	{	\
+		echo '## Code Coverage'; \
+		echo '|File|Method|Coverage|'; \
+		echo '|---|---|--:|'; \
+		go tool cover -func=build/coverage.out | column -t -s $$'\t' | sed 's/^/|/;s/  */ | /g; s/$$/ |/'; \
+	} | tee -a $(GITHUB_STEP_SUMMARY)
+endif
 
 smoke-test:
 	@if [ -f credentials.json ]; then \
