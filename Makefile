@@ -44,7 +44,7 @@ else
 		echo '## Code Coverage'; \
 		echo '|File|Method|Coverage|'; \
 		echo '|---|---|--:|'; \
-		go tool cover -func=build/coverage.out | column -t -s $$'\t' | sed 's/^/|/;s/  */ | /g; s/$$/ |/'; \
+		go tool cover -func=build/coverage.out | awk -F'\t+' 'BEGIN {OFS=" | "} {print "| " $$1, $$2, $$3 " |"}'; \
 	} | tee -a $(GITHUB_STEP_SUMMARY)
 endif
 
