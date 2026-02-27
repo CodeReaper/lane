@@ -1,4 +1,4 @@
-name: Dependabot Auto Release
+name: Auto Release
 
 on:
   push:
